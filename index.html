@@ -1,0 +1,119 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#11152b">
+  <title>碩康集團英雄集結搶答賽</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh;
+      display: grid; place-items: center; padding: 24px;
+      font-family: system-ui, "Noto Sans TC", sans-serif;
+      color: #fff;
+      background: radial-gradient(circle at top, #34346b, #11152b 65%);
+    }
+    main {
+      width: 100%; max-width: 420px; padding: 28px 22px;
+      border: 1px solid #55547c; border-radius: 24px;
+      background: rgba(24, 28, 55, .96);
+      box-shadow: 0 20px 60px #0005;
+    }
+    .symbol { text-align: center; font-size: 46px; }
+    h1 { text-align: center; font-size: 25px; margin: 8px 0; }
+    .sub { text-align: center; color: #c3c7e7; margin-bottom: 26px; }
+    label { display: block; margin: 16px 0 7px; font-weight: 600; }
+    input {
+      width: 100%; padding: 14px; border-radius: 12px;
+      border: 1px solid #565b80; background: #10142b;
+      color: white; font-size: 17px; outline-offset: 3px;
+    }
+    button {
+      width: 100%; padding: 15px; margin-top: 22px;
+      border: 0; border-radius: 12px; background: #8165ff;
+      color: white; font-size: 18px; font-weight: 700;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .6; cursor: wait; }
+    #message {
+      min-height: 48px; margin-top: 18px; text-align: center;
+      line-height: 1.6; white-space: pre-wrap; color: #e1e3ff;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="symbol">⚡</div>
+    <h1>英雄集結搶答賽</h1>
+    <p class="sub">碩康集團 · 歡迎加入挑戰</p>
+
+    <form id="joinForm">
+      <label for="joinCode">遊戲代碼</label>
+      <input id="joinCode" value="SK2026" maxlength="30"
+        autocomplete="off" required>
+
+      <label for="nickname">玩家暱稱（最多 20 字）</label>
+      <input id="nickname" maxlength="20" autocomplete="nickname"
+        placeholder="請輸入你的暱稱" required>
+
+      <button id="joinButton" type="submit">加入遊戲</button>
+    </form>
+
+    <section id="waiting" class="hidden">
+      <h2 id="welcome"></h2>
+      <p>已成功加入，請等待主持人開始遊戲。</p>
+    </section>
+    <div id="message" role="status" aria-live="polite"></div>
+  </main>
+
+  <script>
+    const API_URL =
+      'https://krtktutoycdfcskhpmam.supabase.co/functions/v1/game-api';
+
+    const form = document.getElementById('joinForm');
+    const button = document.getElementById('joinButton');
+    const message = document.getElementById('message');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      button.disabled = true;
+      message.textContent = '正在確認遊戲並加入，請稍候…';
+
+      const join_code = document.getElementById('joinCode').value.trim();
+      const nickname = document.getElementById('nickname').value.trim();
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'join',
+            join_code,
+            nickname
+          })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || '加入失敗，請稍後再試。');
+        }
+
+        form.classList.add('hidden');
+        document.getElementById('welcome').textContent =
+          `歡迎，${result.player.nickname}！`;
+        document.getElementById('waiting').classList.remove('hidden');
+        message.textContent = '加入成功！請留在此頁等待主持人開始。';
+      } catch (error) {
+        message.textContent =
+          error.message || '連線失敗，請確認網路後重試。';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
