@@ -1,0 +1,156 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>碩康集團｜主持人控制台</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px;
+      font-family: system-ui, "Noto Sans TC", sans-serif;
+      color: #fff; background: #11152b;
+    }
+    main { max-width: 800px; margin: auto; }
+    .panel {
+      background: #202544; border: 1px solid #41486e;
+      border-radius: 16px; padding: 20px; margin: 16px 0;
+    }
+    h1 { font-size: 26px; }
+    .muted { color: #c3c7e7; }
+    .count { font-size: 42px; font-weight: 800; }
+    .player {
+      padding: 12px 0; border-bottom: 1px solid #41486e;
+      display: flex; justify-content: space-between; gap: 12px;
+    }
+    .player:last-child { border-bottom: 0; }
+    button {
+      padding: 12px 18px; border: 0; border-radius: 10px;
+      background: #8165ff; color: white; font-size: 16px;
+      cursor: pointer;
+    }
+    input {
+      padding: 12px; border-radius: 8px; border: 1px solid #565b80;
+      background: #10142b; color: white; font-size: 16px; width: 100%;
+    }
+    #message { white-space: pre-wrap; line-height: 1.6; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>⚡ 碩康集團｜主持人控制台</h1>
+  <p class="muted">英雄集結搶答賽</p>
+
+  <section class="panel">
+    <label for="joinCode">遊戲代碼</label>
+    <input id="joinCode" value="SK2026">
+    <p><button id="refreshButton">立即更新名單</button></p>
+    <div id="message">正在連線……</div>
+  </section>
+
+  <section class="panel">
+    <div class="muted">目前遊戲狀態</div>
+    <div id="status">讀取中</div>
+    <div class="muted">已加入玩家</div>
+    <div class="count" id="count">—</div>
+    <div id="updated" class="muted"></div>
+  </section>
+
+  <section class="panel">
+    <h2>玩家名單</h2>
+    <div id="players">讀取中……</div>
+  </section>
+</main>
+
+<script>
+const API_URL =
+  'https://krtktutoycdfcskhpmam.supabase.co/functions/v1/game-api';
+
+// 請替換為你目前網站使用的 sb_publishable_... 金鑰
+const PUBLISHABLE_KEY = 'sb_publishable_kgSXj6Zbk7QpG4Ien7q6TA_IVfAd-wf';
+
+async function loadPlayers() {
+  const message = document.getElementById('message');
+  const button = document.getElementById('refreshButton');
+  button.disabled = true;
+  message.textContent = '正在更新……';
+
+  try {
+    const code = document.getElementById('joinCode').value.trim();
+    const headers = { 'apikey': PUBLISHABLE_KEY };
+
+    const sessionResponse = await fetch(
+      API_URL + '?join_code=' + encodeURIComponent(code),
+      { headers }
+    );
+    const sessionResult = await sessionResponse.json();
+
+    if (!sessionResponse.ok || !sessionResult.success) {
+      throw new Error(sessionResult.message || '無法讀取遊戲場次');
+    }
+
+    const session = sessionResult.session;
+
+    // 請求玩家名單，僅由主持人頁面顯示
+    const playersResponse = await fetch(
+      API_URL + '?action=players&join_code=' + encodeURIComponent(code),
+      { headers }
+    );
+    const playersResult = await playersResponse.json();
+
+    if (!playersResponse.ok || !playersResult.success) {
+      throw new Error(
+        playersResult.message || '目前 API 尚未提供玩家名單功能'
+      );
+    }
+
+    document.getElementById('status').textContent =
+      session.status === 'lobby' ? '等待玩家中' :
+      session.status === 'active' ? '遊戲進行中' :
+      session.status === 'paused' ? '遊戲暫停' :
+      session.status === 'ended' ? '遊戲已結束' : session.status;
+
+    const players = playersResult.players || [];
+    document.getElementById('count').textContent = players.length;
+    document.getElementById('players').innerHTML = '';
+
+    if (players.length === 0) {
+      document.getElementById('players').textContent = '目前尚無玩家';
+    } else {
+      players.forEach((player, index) => {
+        const row = document.createElement('div');
+        row.className = 'player';
+
+        const name = document.createElement('span');
+        name.textContent = `${index + 1}. ${player.nickname}`;
+
+        const time = document.createElement('span');
+        time.className = 'muted';
+        time.textContent = player.joined_at
+          ? new Date(player.joined_at).toLocaleTimeString('zh-TW')
+          : '';
+
+        row.append(name, time);
+        document.getElementById('players').appendChild(row);
+      });
+    }
+
+    document.getElementById('updated').textContent =
+      '最後更新：' + new Date().toLocaleTimeString('zh-TW');
+    message.textContent = '更新成功';
+  } catch (error) {
+    message.textContent = '讀取失敗：' + error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+document.getElementById('refreshButton')
+  .addEventListener('click', loadPlayers);
+
+loadPlayers();
+setInterval(loadPlayers, 3000);
+</script>
+</body>
+</html>
