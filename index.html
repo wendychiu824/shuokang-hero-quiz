@@ -86,15 +86,18 @@
       const nickname = document.getElementById('nickname').value.trim();
 
       try {
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'join',
-            join_code,
-            nickname
-          })
-        });
+const response = await fetch(API_URL, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'apikey': 'sb_publishable_kgSXj6Zbk7QpG4Ien7q6TA_IVfAd-wf'
+  },
+  body: JSON.stringify({
+    action: 'join',
+    join_code,
+    nickname
+  })
+});
 
         const result = await response.json();
 
