@@ -41,7 +41,17 @@
 <main>
   <h1>⚡ 碩康集團｜主持人控制台</h1>
   <p class="muted">英雄集結搶答賽</p>
+<div class="card" style="margin-top:20px;">
+  <h2>🎮 遊戲控制</h2>
 
+  <button id="startBtn" onclick="startGame()">
+    🚀 開始遊戲
+  </button>
+
+  <p id="controlMessage" class="muted">
+    等待主持人開始遊戲
+  </p>
+</div>
   <section class="panel">
     <label for="joinCode">遊戲代碼</label>
     <input id="joinCode" value="SK2026">
@@ -64,6 +74,47 @@
 </main>
 
 <script>
+  async function startGame() {
+  const code = document.getElementById('joinCode').value.trim();
+  const message = document.getElementById('controlMessage');
+  const button = document.getElementById('startBtn');
+
+  if (!code) {
+    message.textContent = '請先輸入遊戲代碼';
+    return;
+  }
+
+  if (!confirm('確定要開始遊戲嗎？')) return;
+
+  button.disabled = true;
+  message.textContent = '正在啟動遊戲...';
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': PUBLISHABLE_KEY
+      },
+      body: JSON.stringify({
+        action: 'start',
+        join_code: code
+      })
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      throw new Error(result.message || '啟動失敗');
+    }
+
+    message.textContent = '🎉 遊戲已開始！';
+  } catch (error) {
+    message.textContent = '啟動失敗：' + error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
 const API_URL =
   'https://krtktutoycdfcskhpmam.supabase.co/functions/v1/game-api';
 
