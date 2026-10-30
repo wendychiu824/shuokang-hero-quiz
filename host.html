@@ -8,31 +8,53 @@
   <style>
     * { box-sizing: border-box; }
     body {
-      margin: 0; padding: 24px;
+      margin: 0;
+      padding: 24px;
       font-family: system-ui, "Noto Sans TC", sans-serif;
-      color: #fff; background: #11152b;
+      color: #fff;
+      background: #11152b;
     }
     main { max-width: 800px; margin: auto; }
-    .panel {
-      background: #202544; border: 1px solid #41486e;
-      border-radius: 16px; padding: 20px; margin: 16px 0;
+    .panel, .card {
+      background: #202544;
+      border: 1px solid #41486e;
+      border-radius: 16px;
+      padding: 20px;
+      margin: 16px 0;
     }
     h1 { font-size: 26px; }
     .muted { color: #c3c7e7; }
     .count { font-size: 42px; font-weight: 800; }
     .player {
-      padding: 12px 0; border-bottom: 1px solid #41486e;
-      display: flex; justify-content: space-between; gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #41486e;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
     }
     .player:last-child { border-bottom: 0; }
     button {
-      padding: 12px 18px; border: 0; border-radius: 10px;
-      background: #8165ff; color: white; font-size: 16px;
+      padding: 12px 18px;
+      margin: 4px;
+      border: 0;
+      border-radius: 10px;
+      background: #8165ff;
+      color: white;
+      font-size: 16px;
       cursor: pointer;
     }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
     input {
-      padding: 12px; border-radius: 8px; border: 1px solid #565b80;
-      background: #10142b; color: white; font-size: 16px; width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #565b80;
+      background: #10142b;
+      color: white;
+      font-size: 16px;
+      width: 100%;
     }
     #message { white-space: pre-wrap; line-height: 1.6; }
   </style>
@@ -41,20 +63,26 @@
 <main>
   <h1>⚡ 碩康集團｜主持人控制台</h1>
   <p class="muted">英雄集結搶答賽</p>
-<div class="card" style="margin-top:20px;">
-  <h2>🎮 遊戲控制</h2>
 
-  <button id="startBtn" onclick="startGame()">
-    🚀 開始遊戲
-  </button>
-  <button id="nextBtn" onclick="nextQuestion()">➡️ 下一題</button>
-  <p id="controlMessage" class="muted">
-    等待主持人開始遊戲
-  </p>
-</div>
+  <div class="card" style="margin-top:20px;">
+    <h2>🎮 遊戲控制</h2>
+
+    <button id="startBtn" onclick="startGame()">
+      🚀 開始遊戲
+    </button>
+
+    <button id="nextBtn" onclick="nextQuestion()">
+      ➡️ 下一題
+    </button>
+
+    <p id="controlMessage" class="muted">
+      等待主持人開始遊戲
+    </p>
+  </div>
+
   <section class="panel">
     <label for="joinCode">遊戲代碼</label>
-    <input id="joinCode" value="SKTEST02">
+    <input id="joinCode" value="SKTEST06">
     <p><button id="refreshButton">立即更新名單</button></p>
     <div id="message">正在連線……</div>
   </section>
@@ -67,14 +95,21 @@
     <div id="updated" class="muted"></div>
   </section>
 
-<section class="panel">
-  <h2>🏆 英雄即時排行榜</h2>
-  <div id="players">正在載入排行榜……</div>
-</section>
+  <section class="panel">
+    <h2>🏆 英雄即時排行榜</h2>
+    <div id="players">正在載入排行榜……</div>
+  </section>
 </main>
 
 <script>
-  async function startGame() {
+const API_URL =
+  'https://krtktutoycdfcskhpmam.supabase.co/functions/v1/game-api';
+
+const PUBLISHABLE_KEY =
+  'sb_publishable_kgSXj6Zbk7QpG4Ien7q6TA_IVfAd-wf';
+
+// 開始遊戲
+async function startGame() {
   const code = document.getElementById('joinCode').value.trim();
   const message = document.getElementById('controlMessage');
   const button = document.getElementById('startBtn');
@@ -83,6 +118,42 @@
     message.textContent = '請先輸入遊戲代碼';
     return;
   }
+
+  if (!confirm('確定要開始遊戲嗎？')) return;
+
+  button.disabled = true;
+  message.textContent = '正在啟動遊戲...';
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': PUBLISHABLE_KEY
+      },
+      body: JSON.stringify({
+        action: 'start',
+        join_code: code
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || '啟動失敗');
+    }
+
+    message.textContent = '🎉 遊戲已開始！';
+    loadPlayers();
+
+  } catch (error) {
+    message.textContent = '啟動失敗：' + error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+// 切換下一題
 async function nextQuestion() {
   const code = document.getElementById('joinCode').value.trim();
   const message = document.getElementById('controlMessage');
@@ -92,6 +163,8 @@ async function nextQuestion() {
     message.textContent = '請先輸入遊戲代碼';
     return;
   }
+
+  if (!confirm('確定要切換至下一題嗎？')) return;
 
   button.disabled = true;
   message.textContent = '正在切換下一題……';
@@ -115,64 +188,37 @@ async function nextQuestion() {
       throw new Error(result.message || '切換失敗');
     }
 
-    message.textContent = '🎉 已切換至第 ' + result.current_question + ' 題！';
+    message.textContent =
+      '🎉 已切換至第 ' + result.current_question + ' 題！';
+
+    loadPlayers();
+
   } catch (error) {
     message.textContent = '切換失敗：' + error.message;
   } finally {
     button.disabled = false;
   }
 }
-  if (!confirm('確定要開始遊戲嗎？')) return;
 
-  button.disabled = true;
-  message.textContent = '正在啟動遊戲...';
-
-  try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': PUBLISHABLE_KEY
-      },
-      body: JSON.stringify({
-        action: 'start',
-        join_code: code
-      })
-    });
-
-    const result = await response.json();
-
-    if (!result.success) {
-      throw new Error(result.message || '啟動失敗');
-    }
-
-    message.textContent = '🎉 遊戲已開始！';
-  } catch (error) {
-    message.textContent = '啟動失敗：' + error.message;
-  } finally {
-    button.disabled = false;
-  }
-}
-const API_URL =
-  'https://krtktutoycdfcskhpmam.supabase.co/functions/v1/game-api';
-
-// 請替換為你目前網站使用的 sb_publishable_... 金鑰
-const PUBLISHABLE_KEY = 'sb_publishable_kgSXj6Zbk7QpG4Ien7q6TA_IVfAd-wf';
-
+// 讀取玩家與排行榜
 async function loadPlayers() {
   const message = document.getElementById('message');
   const button = document.getElementById('refreshButton');
+
   button.disabled = true;
-  message.textContent = '正在更新……';
 
   try {
     const code = document.getElementById('joinCode').value.trim();
+
+    if (!code) throw new Error('請輸入遊戲代碼');
+
     const headers = { 'apikey': PUBLISHABLE_KEY };
 
     const sessionResponse = await fetch(
       API_URL + '?join_code=' + encodeURIComponent(code),
       { headers }
     );
+
     const sessionResult = await sessionResponse.json();
 
     if (!sessionResponse.ok || !sessionResult.success) {
@@ -181,17 +227,15 @@ async function loadPlayers() {
 
     const session = sessionResult.session;
 
-    // 請求玩家名單，僅由主持人頁面顯示
     const playersResponse = await fetch(
       API_URL + '?action=players&join_code=' + encodeURIComponent(code),
       { headers }
     );
+
     const playersResult = await playersResponse.json();
 
     if (!playersResponse.ok || !playersResult.success) {
-      throw new Error(
-        playersResult.message || '目前 API 尚未提供玩家名單功能'
-      );
+      throw new Error(playersResult.message || '無法讀取玩家名單');
     }
 
     document.getElementById('status').textContent =
@@ -201,7 +245,9 @@ async function loadPlayers() {
       session.status === 'ended' ? '遊戲已結束' : session.status;
 
     const players = playersResult.players || [];
+
     players.sort((a, b) => b.total_score - a.total_score);
+
     document.getElementById('count').textContent = players.length;
     document.getElementById('players').innerHTML = '';
 
@@ -212,25 +258,27 @@ async function loadPlayers() {
         const row = document.createElement('div');
         row.className = 'player';
 
-const name = document.createElement('span');
+        const name = document.createElement('span');
+        const medal = ['🥇', '🥈', '🥉'][index] || '🏅';
 
-const medal = ['🥇', '🥈', '🥉'][index] || '🏅';
+        name.textContent =
+          `${medal} ${index + 1}. ${player.nickname}`;
 
-name.textContent = `${medal} ${index + 1}. ${player.nickname}`;
+        const score = document.createElement('span');
 
-const score = document.createElement('span');
-score.textContent =
-  `${player.total_score || 0} 分｜答對 ${player.correct_count || 0} 題`;
+        score.textContent =
+          `${player.total_score || 0} 分｜答對 ${player.correct_count || 0} 題`;
 
-row.append(name, score);
-document.getElementById('players').appendChild(row);
-
+        row.append(name, score);
+        document.getElementById('players').appendChild(row);
       });
     }
 
     document.getElementById('updated').textContent =
       '最後更新：' + new Date().toLocaleTimeString('zh-TW');
+
     message.textContent = '更新成功';
+
   } catch (error) {
     message.textContent = '讀取失敗：' + error.message;
   } finally {
