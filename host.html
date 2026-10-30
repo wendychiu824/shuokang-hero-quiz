@@ -67,10 +67,10 @@
     <div id="updated" class="muted"></div>
   </section>
 
-  <section class="panel">
-    <h2>玩家名單</h2>
-    <div id="players">讀取中……</div>
-  </section>
+<section class="panel">
+  <h2>🏆 英雄即時排行榜</h2>
+  <div id="players">正在載入排行榜……</div>
+</section>
 </main>
 
 <script>
@@ -163,6 +163,7 @@ async function loadPlayers() {
       session.status === 'ended' ? '遊戲已結束' : session.status;
 
     const players = playersResult.players || [];
+    players.sort((a, b) => b.total_score - a.total_score);
     document.getElementById('count').textContent = players.length;
     document.getElementById('players').innerHTML = '';
 
@@ -173,17 +174,19 @@ async function loadPlayers() {
         const row = document.createElement('div');
         row.className = 'player';
 
-        const name = document.createElement('span');
-        name.textContent = `${index + 1}. ${player.nickname}`;
+const name = document.createElement('span');
 
-        const time = document.createElement('span');
-        time.className = 'muted';
-        time.textContent = player.joined_at
-          ? new Date(player.joined_at).toLocaleTimeString('zh-TW')
-          : '';
+const medal = ['🥇', '🥈', '🥉'][index] || '🏅';
 
-        row.append(name, time);
-        document.getElementById('players').appendChild(row);
+name.textContent = `${medal} ${index + 1}. ${player.nickname}`;
+
+const score = document.createElement('span');
+score.textContent =
+  `${player.total_score || 0} 分｜答對 ${player.correct_count || 0} 題`;
+
+row.append(name, score);
+document.getElementById('players').appendChild(row);
+
       });
     }
 
