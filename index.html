@@ -47,6 +47,10 @@
 }
 
 .option {
+  width: 100%;
+  color: white;
+  cursor: pointer;
+  pointer-events: auto;
   padding: 15px;
   margin: 12px 0;
   border: 1px solid #7775a8;
@@ -54,6 +58,14 @@
   background: #292d50;
   font-size: 16px;
   line-height: 1.5;
+}
+    .option:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.option:not(:disabled):hover {
+  background: #414875;
 }
 
 #questionText {
@@ -89,12 +101,12 @@
   <h2 id="questionNumber">第 1 題</h2>
   <h2 id="questionText"></h2>
 
-  <div id="options">
-    <div class="option" id="optionA"></div>
-    <div class="option" id="optionB"></div>
-    <div class="option" id="optionC"></div>
-    <div class="option" id="optionD"></div>
-  </div>
+<div id="options">
+  <button class="option" id="optionA" type="button"></button>
+  <button class="option" id="optionB" type="button"></button>
+  <button class="option" id="optionC" type="button"></button>
+  <button class="option" id="optionD" type="button"></button>
+</div>
 
   <p id="questionMessage">請仔細閱讀題目！</p>
 </section>
@@ -114,7 +126,73 @@
     const message = document.getElementById('message');
 let pollTimer = null;
 let isChecking = false;
+let currentPlayerId = null;
+let hasAnswered = false;
     form.addEventListener('submit', async (event) => {
+      async function submitAnswer(selectedOption) {
+  if (!currentPlayerId || hasAnswered) return;
+
+  hasAnswered = true;
+
+  const options = [
+    document.getElementById('optionA'),
+    document.getElementById('optionB'),
+    document.getElementById('optionC'),
+    document.getElementById('optionD')
+  ];
+
+  options.forEach(button => button.disabled = true);
+
+  document.getElementById('questionMessage').textContent =
+    '答案送出中，請稍候…';
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': 'sb_publishable_kgSXj6Zbk7QpG4Ien7q6TA_IVfAd-wf'
+      },
+      body: JSON.stringify({
+        action: 'answer',
+        join_code: document.getElementById('joinCode').value.trim(),
+        player_id: currentPlayerId,
+        selected_option: selectedOption
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || '答案送出失敗');
+    }
+
+    document.getElementById('questionMessage').textContent =
+      `${result.message} 本題獲得 ${result.earned_points} 分！`;
+
+  } catch (error) {
+    hasAnswered = false;
+    options.forEach(button => button.disabled = false);
+
+    document.getElementById('questionMessage').textContent =
+      error.message;
+  }
+}
+      document.getElementById('optionA').addEventListener('click', () => {
+  submitAnswer(0);
+});
+
+document.getElementById('optionB').addEventListener('click', () => {
+  submitAnswer(1);
+});
+
+document.getElementById('optionC').addEventListener('click', () => {
+  submitAnswer(2);
+});
+
+document.getElementById('optionD').addEventListener('click', () => {
+  submitAnswer(3);
+});
       async function checkGameQuestion(joinCode) {
   if (isChecking) return;
   isChecking = true;
@@ -164,6 +242,17 @@ let isChecking = false;
       if (!questionResult.success) return;
 
       const q = questionResult.question;
+      hasAnswered = false;
+
+[
+  'optionA',
+  'optionB',
+  'optionC',
+  'optionD'
+].forEach(id => {
+  const button = document.getElementById(id);
+  button.disabled = false;
+});
 
       document.getElementById('waiting').classList.add('hidden');
       document.getElementById('questionPanel').classList.remove('hidden');
@@ -218,7 +307,9 @@ const response = await fetch(API_URL, {
         if (!response.ok || !result.success) {
           throw new Error(result.message || '加入失敗，請稍後再試。');
         }
-
+        
+currentPlayerId = result.player.id;
+        
         form.classList.add('hidden');
         document.getElementById('welcome').textContent =
           `歡迎，${result.player.nickname}！`;
