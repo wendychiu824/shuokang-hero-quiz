@@ -83,7 +83,45 @@
     message.textContent = '請先輸入遊戲代碼';
     return;
   }
+async function nextQuestion() {
+  const code = document.getElementById('joinCode').value.trim();
+  const message = document.getElementById('controlMessage');
+  const button = document.getElementById('nextBtn');
 
+  if (!code) {
+    message.textContent = '請先輸入遊戲代碼';
+    return;
+  }
+
+  button.disabled = true;
+  message.textContent = '正在切換下一題……';
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': PUBLISHABLE_KEY
+      },
+      body: JSON.stringify({
+        action: 'next',
+        join_code: code
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || '切換失敗');
+    }
+
+    message.textContent = '🎉 已切換至第 ' + result.current_question + ' 題！';
+  } catch (error) {
+    message.textContent = '切換失敗：' + error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
   if (!confirm('確定要開始遊戲嗎？')) return;
 
   button.disabled = true;
