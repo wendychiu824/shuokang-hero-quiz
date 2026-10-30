@@ -42,6 +42,29 @@
       line-height: 1.6; white-space: pre-wrap; color: #e1e3ff;
     }
     .hidden { display: none; }
+#questionPanel {
+  margin-top: 24px;
+}
+
+.option {
+  padding: 15px;
+  margin: 12px 0;
+  border: 1px solid #7775a8;
+  border-radius: 12px;
+  background: #292d50;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+#questionText {
+  line-height: 1.6;
+  margin: 18px 0;
+}
+
+#questionMessage {
+  text-align: center;
+  color: #c3c7e7;
+}
   </style>
 </head>
 <body>
@@ -61,7 +84,20 @@
 
       <button id="joinButton" type="submit">加入遊戲</button>
     </form>
+<section id="questionPanel" class="hidden">
+  <p class="sub">⚡ 英雄挑戰開始！</p>
+  <h2 id="questionNumber">第 1 題</h2>
+  <h2 id="questionText"></h2>
 
+  <div id="options">
+    <div class="option" id="optionA"></div>
+    <div class="option" id="optionB"></div>
+    <div class="option" id="optionC"></div>
+    <div class="option" id="optionD"></div>
+  </div>
+
+  <p id="questionMessage">請仔細閱讀題目！</p>
+</section>
     <section id="waiting" class="hidden">
       <h2 id="welcome"></h2>
       <p>已成功加入，請等待主持人開始遊戲。</p>
@@ -76,8 +112,86 @@
     const form = document.getElementById('joinForm');
     const button = document.getElementById('joinButton');
     const message = document.getElementById('message');
-
+let pollTimer = null;
+let isChecking = false;
     form.addEventListener('submit', async (event) => {
+      async function checkGameQuestion(joinCode) {
+  if (isChecking) return;
+  isChecking = true;
+
+  try {
+    const headers = {
+      'apikey': 'sb_publishable_kgSXj6Zbk7QpG4Ien7q6TA_IVfAd-wf'
+    };
+
+    const sessionResponse = await fetch(
+      `${API_URL}?join_code=${encodeURIComponent(joinCode)}`,
+      { headers }
+    );
+
+    const sessionResult = await sessionResponse.json();
+
+    if (!sessionResult.success) return;
+
+    const status = sessionResult.session.status;
+
+    if (status === 'lobby') {
+      document.getElementById('questionMessage').textContent =
+        '等待主持人開始遊戲…';
+      return;
+    }
+
+    if (status === 'paused') {
+      document.getElementById('questionMessage').textContent =
+        '⏸ 遊戲暫停中，請稍候！';
+      return;
+    }
+
+    if (status === 'ended') {
+      document.getElementById('questionMessage').textContent =
+        '🏁 本次遊戲已結束，感謝參與！';
+      return;
+    }
+
+    if (status === 'active') {
+      const questionResponse = await fetch(
+        `${API_URL}?join_code=${encodeURIComponent(joinCode)}&action=question`,
+        { headers }
+      );
+
+      const questionResult = await questionResponse.json();
+
+      if (!questionResult.success) return;
+
+      const q = questionResult.question;
+
+      document.getElementById('waiting').classList.add('hidden');
+      document.getElementById('questionPanel').classList.remove('hidden');
+
+      document.getElementById('questionNumber').textContent =
+        `第 ${q.question_order} 題`;
+
+      document.getElementById('questionText').textContent =
+        q.question_text;
+
+      document.getElementById('optionA').textContent =
+        `A. ${q.option_a}`;
+      document.getElementById('optionB').textContent =
+        `B. ${q.option_b}`;
+      document.getElementById('optionC').textContent =
+        `C. ${q.option_c}`;
+      document.getElementById('optionD').textContent =
+        `D. ${q.option_d}`;
+
+      document.getElementById('questionMessage').textContent =
+        '請仔細閱讀題目，準備作答！';
+    }
+  } catch (error) {
+    console.error('讀取題目失敗：', error);
+  } finally {
+    isChecking = false;
+  }
+}
       event.preventDefault();
       button.disabled = true;
       message.textContent = '正在確認遊戲並加入，請稍候…';
@@ -110,6 +224,15 @@ const response = await fetch(API_URL, {
           `歡迎，${result.player.nickname}！`;
         document.getElementById('waiting').classList.remove('hidden');
         message.textContent = '加入成功！請留在此頁等待主持人開始。';
+        if (pollTimer) {
+  clearInterval(pollTimer);
+}
+
+checkGameQuestion(join_code);
+
+pollTimer = setInterval(() => {
+  checkGameQuestion(join_code);
+}, 2500);
       } catch (error) {
         message.textContent =
           error.message || '連線失敗，請確認網路後重試。';
