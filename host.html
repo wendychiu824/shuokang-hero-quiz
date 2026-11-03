@@ -74,6 +74,9 @@
     <button id="nextBtn" onclick="nextQuestion()">
       ➡️ 下一題
     </button>
+    <button id="endBtn" onclick="endGame()" style="background:#dc3545;">
+  🛑 結束遊戲
+</button>
 
     <p id="controlMessage" class="muted">
       等待主持人開始遊戲
@@ -199,7 +202,52 @@ async function nextQuestion() {
     button.disabled = false;
   }
 }
+// 結束遊戲
+async function endGame() {
+  const code = document.getElementById('joinCode').value.trim();
+  const message = document.getElementById('controlMessage');
+  const button = document.getElementById('endBtn');
 
+  if (!code) {
+    message.textContent = '請先輸入遊戲代碼';
+    return;
+  }
+
+  if (!confirm('確定要結束本場遊戲嗎？結束後玩家將無法繼續作答！')) {
+    return;
+  }
+
+  button.disabled = true;
+  message.textContent = '正在結束遊戲……';
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': PUBLISHABLE_KEY
+      },
+      body: JSON.stringify({
+        action: 'end',
+        join_code: code
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || '結束遊戲失敗');
+    }
+
+    message.textContent = '🏁 本場遊戲已結束！';
+    loadPlayers();
+
+  } catch (error) {
+    message.textContent = '結束遊戲失敗：' + error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
 // 讀取玩家與排行榜
 async function loadPlayers() {
   const message = document.getElementById('message');
