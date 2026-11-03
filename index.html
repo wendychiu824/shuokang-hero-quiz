@@ -269,11 +269,16 @@
 
         const questionResult = await questionResponse.json();
 
-        if (!questionResponse.ok || !questionResult.success) {
-          setOptionsDisabled(true);
-          return;
-        }
+if (!questionResponse.ok || !questionResult.success) {
+  setOptionsDisabled(true);
 
+  questionMessage.textContent =
+    questionResult.message || '目前無法取得題目，請稍候。';
+
+  console.error('讀取題目失敗：', questionResult);
+
+  return;
+}
         const q = questionResult.question;
 
         // 判斷是否已經切換到新題目
