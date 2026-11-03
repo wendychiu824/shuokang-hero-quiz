@@ -74,6 +74,13 @@
     <button id="nextBtn" onclick="nextQuestion()">
       ➡️ 下一題
     </button>
+    <button id="pauseBtn" onclick="pauseGame()" style="background:#e09b28;">
+  ⏸️ 暫停遊戲
+</button>
+
+<button id="resumeBtn" onclick="resumeGame()" style="background:#159b78;">
+  ▶️ 繼續遊戲
+</button>
     <button id="endBtn" onclick="endGame()" style="background:#dc3545;">
   🛑 結束遊戲
 </button>
@@ -202,6 +209,65 @@ async function nextQuestion() {
     button.disabled = false;
   }
 }
+// 暫停遊戲
+async function pauseGame() {
+  await controlGameAction('pause', '正在暫停遊戲……', '⏸️ 遊戲已暫停！');
+}
+
+// 繼續遊戲
+async function resumeGame() {
+  await controlGameAction('resume', '正在繼續遊戲……', '▶️ 遊戲已繼續！');
+}
+
+// 共用遊戲控制 API
+async function controlGameAction(action, loadingText, successText) {
+  const code = document.getElementById('joinCode').value.trim();
+  const message = document.getElementById('controlMessage');
+  const buttonId = action === 'pause' ? 'pauseBtn' : 'resumeBtn';
+  const button = document.getElementById(buttonId);
+
+  if (!code) {
+    message.textContent = '請先輸入遊戲代碼';
+    return;
+  }
+
+  const confirmText = action === 'pause'
+    ? '確定要暫停遊戲嗎？'
+    : '確定要繼續遊戲嗎？';
+
+  if (!confirm(confirmText)) return;
+
+  button.disabled = true;
+  message.textContent = loadingText;
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': PUBLISHABLE_KEY
+      },
+      body: JSON.stringify({
+        action: action,
+        join_code: code
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || '操作失敗');
+    }
+
+    message.textContent = successText;
+    await loadPlayers();
+
+  } catch (error) {
+    message.textContent = '操作失敗：' + error.message;
+  } finally {
+    button.disabled = false;
+  }
+}  
 // 結束遊戲
 async function endGame() {
   const code = document.getElementById('joinCode').value.trim();
