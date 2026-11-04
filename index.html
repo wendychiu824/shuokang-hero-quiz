@@ -122,6 +122,7 @@
     <div class="symbol">⚡</div>
     <h1>英雄集結搶答賽</h1>
     <p class="sub">碩康集團 · 歡迎加入挑戰</p>
+    <p id="message" style="color:#ffb4b4; margin:10px 0;"></p>
 
     <form id="joinForm">
       <label for="joinCode">遊戲代碼</label>
@@ -133,6 +134,10 @@
         placeholder="請輸入你的暱稱" required>
 
       <button id="joinButton" type="submit">加入遊戲</button>
+
+      <button id="viewLeaderboardButton" type="button">
+       🏆 查看最終排行榜
+      </button>
     </form>
 <section id="questionPanel" class="hidden">
   <p class="sub">⚡ 英雄挑戰開始！</p>
@@ -270,6 +275,57 @@
         `${error.message}（系統將稍後重新嘗試）`;
     }
   }
+
+  
+// 查看最終排行榜按鈕
+document.getElementById('viewLeaderboardButton')
+  .addEventListener('click', async () => {
+
+    const joinCode =
+      document.getElementById('joinCode').value.trim();
+
+    const message = document.getElementById('message');
+
+    if (!joinCode) {
+      message.textContent = '請先輸入遊戲代碼';
+      return;
+    }
+
+    message.textContent = '正在查詢遊戲場次…';
+
+    try {
+      const response = await fetch(
+        `${API_URL}?join_code=${encodeURIComponent(joinCode)}&_=${Date.now()}`,
+        {
+          headers: { 'apikey': API_KEY },
+          cache: 'no-store'
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || '查詢遊戲失敗');
+      }
+
+      if (result.session.status !== 'ended') {
+        message.textContent = '本場遊戲尚未結束，目前無法查看最終排行榜。';
+        return;
+      }
+
+      // 確認遊戲已結束，直接讀取排行榜
+      await loadFinalLeaderboard(joinCode);
+
+      if (leaderboardLoaded) {
+        document.getElementById('joinForm')
+          .classList.add('hidden');
+      }
+
+    } catch (error) {
+      message.textContent = error.message || '排行榜讀取失敗';
+      console.error('排行榜查詢失敗：', error);
+    }
+  });
 
 
   const optionButtons = [
