@@ -358,10 +358,14 @@
       };
 
       // 先取得遊戲場次狀態
-      const sessionResponse = await fetch(
-        `${API_URL}?join_code=${encodeURIComponent(joinCode)}`,
-        { headers }
-      );
+const sessionResponse = await fetch(
+  `${API_URL}?join_code=${encodeURIComponent(joinCode)}&_=${Date.now()}`,
+  {
+    headers,
+    cache: 'no-store'
+  }
+);
+
 
       const sessionResult = await sessionResponse.json();
 
