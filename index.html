@@ -220,6 +220,8 @@ if (!sessionResponse.ok || !sessionResult.success || !sessionResult.session) {
 }
 
 const sessionId = sessionResult.session.id;
+const baseUrl = API_URL.replace('/functions/v1/game-api', '');
+      
       // 依總分、答對題數排序，僅取前五位
       const playersUrl =
         `${baseUrl}/rest/v1/game_players?select=nickname,total_score,correct_count&session_id=eq.${encodeURIComponent(sessionId)}&order=total_score.desc,correct_count.desc&limit=5`;
