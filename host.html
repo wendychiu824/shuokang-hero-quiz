@@ -61,6 +61,35 @@
 </head>
 <body>
 <main>
+ 
+<!-- 主持人登入畫面 -->
+<div id="loginPanel">
+  <h1>⚡ 碩康集團｜主持人登入</h1>
+  <p class="muted">英雄集結搶答賽</p>
+
+  <div class="card" style="margin-top:20px;">
+    <h2>🔐 主持人權限驗證</h2>
+
+    <input
+      type="password"
+      id="hostPassword"
+      placeholder="請輸入主持人密碼"
+      style="width:100%;padding:14px;margin:10px 0;border-radius:8px;box-sizing:border-box;"
+    >
+
+    <button id="loginBtn" onclick="loginHost()">
+      🔓 登入主持人控制台
+    </button>
+
+    <p id="loginMessage" class="muted">
+      請輸入主持人密碼
+    </p>
+  </div>
+</div>
+
+<!-- 主持人遊戲控制台：登入後才顯示 -->
+<div id="hostPanel" style="display:none;">
+
   <h1>⚡ 碩康集團｜主持人控制台</h1>
   <p class="muted">英雄集結搶答賽</p>
 
@@ -74,24 +103,33 @@
     <button id="nextBtn" onclick="nextQuestion()">
       ➡️ 下一題
     </button>
-    <button id="pauseBtn" onclick="pauseGame()" style="background:#e09b28;">
-  ⏸️ 暫停遊戲
-</button>
 
-<button id="resumeBtn" onclick="resumeGame()" style="background:#159b78;">
-  ▶️ 繼續遊戲
-</button>
+    <button id="pauseBtn" onclick="pauseGame()" style="background:#e09b28;">
+      ⏸️ 暫停遊戲
+    </button>
+
+    <button id="resumeBtn" onclick="resumeGame()" style="background:#159b78;">
+      ▶️ 繼續遊戲
+    </button>
+
     <button id="endBtn" onclick="endGame()" style="background:#dc3545;">
-  🛑 結束遊戲
-</button>
+      🛑 結束遊戲
+    </button>
+
     <button id="resetBtn" onclick="resetGame()" style="background:#6c42a5;">
-  🔄 重新開始遊戲
-</button>
+      🔄 重新開始遊戲
+    </button>
 
     <p id="controlMessage" class="muted">
       等待主持人開始遊戲
     </p>
+
+    <button onclick="logoutHost()" style="background:#555;">
+      🚪 登出主持人帳號
+    </button>
   </div>
+</div>
+
 
   <section class="panel">
     <label for="joinCode">遊戲代碼</label>
@@ -121,8 +159,126 @@ const API_URL =
 const PUBLISHABLE_KEY =
   'sb_publishable_kgSXj6Zbk7QpG4Ien7q6TA_IVfAd-wf';
 
+// 主持人登入狀態管理
+function showHostPanel() {
+  document.getElementById('loginPanel').style.display = 'none';
+  document.getElementById('hostPanel').style.display = 'block';
+}
+
+function showLoginPanel(message = '請輸入主持人密碼') {
+  document.getElementById('hostPanel').style.display = 'none';
+  document.getElementById('loginPanel').style.display = 'block';
+  document.getElementById('loginMessage').textContent = message;
+}
+
+// 主持人登入
+async function loginHost() {
+  const password = document.getElementById('hostPassword').value;
+  const message = document.getElementById('loginMessage');
+  const button = document.getElementById('loginBtn');
+
+  if (!password) {
+    message.textContent = '請輸入主持人密碼';
+    return;
+  }
+
+  button.disabled = true;
+  message.textContent = '正在驗證登入……';
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': PUBLISHABLE_KEY
+      },
+      body: JSON.stringify({
+        action: 'host_login',
+        host_password: password
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success || !result.token) {
+      throw new Error(result.message || '登入失敗');
+    }
+
+    // 保存登入憑證及到期時間，不保存密碼
+    sessionStorage.setItem('host_token', result.token);
+    sessionStorage.setItem(
+      'host_token_expiry',
+      String(Date.now() + result.expires_in * 1000)
+    );
+
+    document.getElementById('hostPassword').value = '';
+    showHostPanel();
+
+  } catch (error) {
+    message.textContent = '登入失敗：' + error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+
+// 主持人登出
+function logoutHost() {
+  sessionStorage.removeItem('host_token');
+  sessionStorage.removeItem('host_token_expiry');
+  showLoginPanel('已登出，請重新登入');
+}
+
+// 網頁重新整理時，檢查登入期限
+function restoreHostLogin() {
+  const token = sessionStorage.getItem('host_token');
+  const expiry = Number(
+    sessionStorage.getItem('host_token_expiry')
+  );
+
+  if (token && expiry && Date.now() < expiry) {
+    showHostPanel();
+  } else {
+    logoutHost();
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', restoreHostLogin);
+} else {
+  restoreHostLogin();
+}
+
 // 開始遊戲
 async function startGame() {
+  
+// 主持人專用 API：自動附加登入憑證
+async function hostFetch(options) {
+  const token = sessionStorage.getItem('host_token');
+  const expiry = Number(
+    sessionStorage.getItem('host_token_expiry')
+  );
+
+  if (!token || !expiry || Date.now() >= expiry) {
+    logoutHost();
+    throw new Error('主持人登入已逾期，請重新登入');
+  }
+
+  const body = JSON.parse(options.body || '{}');
+  body.host_token = token;
+
+  const response = await hostFetch({
+    ...options,
+    body: JSON.stringify(body)
+  });
+
+  if (response.status === 401) {
+    logoutHost();
+    throw new Error('主持人登入已失效，請重新登入');
+  }
+
+  return response;
+}
+
   const code = document.getElementById('joinCode').value.trim();
   const message = document.getElementById('controlMessage');
   const button = document.getElementById('startBtn');
@@ -183,7 +339,7 @@ async function nextQuestion() {
   message.textContent = '正在切換下一題……';
 
   try {
-    const response = await fetch(API_URL, {
+    const response = await hostFetch({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -244,7 +400,7 @@ async function controlGameAction(action, loadingText, successText) {
   message.textContent = loadingText;
 
   try {
-    const response = await fetch(API_URL, {
+    const response = await hostFetch({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -290,7 +446,7 @@ async function endGame() {
   message.textContent = '正在結束遊戲……';
 
   try {
-    const response = await fetch(API_URL, {
+    const response = await hostFetch({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -343,7 +499,7 @@ async function resetGame() {
   message.textContent = '正在清除本場遊戲資料……';
 
   try {
-    const response = await fetch(API_URL, {
+    const response = await hostFetch({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
