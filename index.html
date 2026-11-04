@@ -77,6 +77,44 @@
   text-align: center;
   color: #c3c7e7;
 }
+
+    #leaderboardPanel {
+      margin-top: 24px;
+      padding: 20px 16px;
+      border: 1px solid #7770b5;
+      border-radius: 18px;
+      background: linear-gradient(160deg, #302b5c, #171b38);
+    }
+    #leaderboardPanel h2 {
+      margin: 0 0 8px;
+      text-align: center;
+      color: #ffe18a;
+    }
+    #leaderboardPanel .leaderboard-sub {
+      text-align: center;
+      color: #d5d7f4;
+      margin: 0 0 18px;
+    }
+    .rank-row {
+      display: grid;
+      grid-template-columns: 54px 1fr auto;
+      align-items: center;
+      gap: 8px;
+      margin: 9px 0;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.09);
+    }
+    .rank-number { font-weight: 800; color: #ffe18a; }
+    .rank-name { overflow-wrap: anywhere; font-weight: 650; }
+    .rank-score { color: #ffe18a; font-weight: 800; white-space: nowrap; }
+    .rank-empty, #leaderboardMessage {
+      text-align: center;
+      color: #d5d7f4;
+      line-height: 1.6;
+    }
+    .rank-row:nth-of-type(1) { border: 1px solid #d9b94f; }
+
   </style>
 </head>
 <body>
@@ -110,6 +148,16 @@
 
   <p id="questionMessage">請仔細閱讀題目！</p>
 </section>
+
+    <section id="leaderboardPanel" class="hidden" aria-live="polite">
+      <div class="symbol">🏆</div>
+      <h2>英雄榮耀榜 TOP 5</h2>
+      <p class="leaderboard-sub">本次搶答賽最終排名</p>
+      <div id="leaderboardRows"></div>
+      <p id="leaderboardMessage">正在整理最終成績…</p>
+      <p class="leaderboard-sub">感謝所有英雄玩家的熱情參與！</p>
+    </section>
+
     <section id="waiting" class="hidden">
       <h2 id="welcome"></h2>
       <p>已成功加入，請等待主持人開始遊戲。</p>
@@ -131,6 +179,98 @@
   const questionPanel = document.getElementById('questionPanel');
   const waiting = document.getElementById('waiting');
   const questionMessage = document.getElementById('questionMessage');
+
+  const leaderboardPanel = document.getElementById('leaderboardPanel');
+  const leaderboardRows = document.getElementById('leaderboardRows');
+  const leaderboardMessage = document.getElementById('leaderboardMessage');
+  let leaderboardLoaded = false;
+
+  // 遊戲結束後，讀取本場次前五名
+  async function loadFinalLeaderboard(joinCode) {
+    if (leaderboardLoaded) return;
+
+    leaderboardPanel.classList.remove('hidden');
+    questionPanel.classList.add('hidden');
+    waiting.classList.add('hidden');
+    leaderboardMessage.textContent = '正在整理最終成績…';
+
+    try {
+      const headers = { 'apikey': API_KEY };
+
+      // 先依遊戲代碼取得本場次 ID
+      const baseUrl = API_URL.replace('/functions/v1/game-api', '');
+      const sessionUrl =
+        `${baseUrl}/rest/v1/game_sessions?select=id&join_code=eq.${encodeURIComponent(joinCode)}&limit=1`;
+
+      const sessionResponse = await fetch(sessionUrl, { headers });
+      const sessions = await sessionResponse.json();
+
+      if (!sessionResponse.ok || !sessions.length) {
+        throw new Error('無法取得本場次資料，請聯絡主持人。');
+      }
+
+      const sessionId = sessions[0].id;
+
+      // 依總分、答對題數排序，僅取前五位
+      const playersUrl =
+        `${baseUrl}/rest/v1/game_players?select=nickname,total_score,correct_count&session_id=eq.${encodeURIComponent(sessionId)}&order=total_score.desc,correct_count.desc&limit=5`;
+
+      const playersResponse = await fetch(playersUrl, { headers });
+      const players = await playersResponse.json();
+
+      if (!playersResponse.ok) {
+        throw new Error('讀取排行榜失敗，請確認資料讀取權限。');
+      }
+
+      leaderboardRows.replaceChildren();
+
+      if (!players.length) {
+        leaderboardRows.innerHTML =
+          '<p class="rank-empty">本場次尚無玩家成績。</p>';
+      } else {
+        let previousScore = null;
+        let previousCorrect = null;
+        let rank = 0;
+
+        players.forEach((player, index) => {
+          const score = Number(player.total_score) || 0;
+          const correct = Number(player.correct_count) || 0;
+
+          if (score !== previousScore || correct !== previousCorrect) {
+            rank = index + 1;
+          }
+          previousScore = score;
+          previousCorrect = correct;
+
+          const row = document.createElement('div');
+          row.className = 'rank-row';
+
+          const rankEl = document.createElement('span');
+          rankEl.className = 'rank-number';
+          rankEl.textContent = ['🥇', '🥈', '🥉'][rank - 1] || `第 ${rank} 名`;
+
+          const nameEl = document.createElement('span');
+          nameEl.className = 'rank-name';
+          nameEl.textContent = player.nickname || '未命名玩家';
+
+          const scoreEl = document.createElement('span');
+          scoreEl.className = 'rank-score';
+          scoreEl.textContent = `${score.toLocaleString('zh-TW')} 分`;
+
+          row.append(rankEl, nameEl, scoreEl);
+          leaderboardRows.appendChild(row);
+        });
+      }
+
+      leaderboardMessage.textContent = '遊戲已結束，恭喜以上英雄玩家！';
+      leaderboardLoaded = true;
+    } catch (error) {
+      console.error('讀取最終排行榜失敗：', error);
+      leaderboardMessage.textContent =
+        `${error.message}（系統將稍後重新嘗試）`;
+    }
+  }
+
 
   const optionButtons = [
     document.getElementById('optionA'),
@@ -246,13 +386,12 @@
         return;
       }
 
-      // 遊戲結束
+      // 遊戲結束：玩家頁面顯示最終前五名
       if (status === 'ended') {
         setOptionsDisabled(true);
-        questionMessage.textContent =
-          '🏁 本次遊戲已結束，感謝參與！';
+        await loadFinalLeaderboard(joinCode);
 
-        if (pollTimer) {
+        if (leaderboardLoaded && pollTimer) {
           clearInterval(pollTimer);
           pollTimer = null;
         }
