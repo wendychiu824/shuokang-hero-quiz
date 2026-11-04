@@ -202,20 +202,24 @@
     try {
       const headers = { 'apikey': API_KEY };
 
-      // 先依遊戲代碼取得本場次 ID
-      const baseUrl = API_URL.replace('/functions/v1/game-api', '');
-      const sessionUrl =
-        `${baseUrl}/rest/v1/game_sessions?select=id&join_code=eq.${encodeURIComponent(joinCode)}&limit=1`;
+// 透過 game-api 取得本場次 ID
+const sessionResponse = await fetch(
+  `${API_URL}?join_code=${encodeURIComponent(joinCode)}&_=${Date.now()}`,
+  {
+    headers,
+    cache: 'no-store'
+  }
+);
 
-      const sessionResponse = await fetch(sessionUrl, { headers });
-      const sessions = await sessionResponse.json();
+const sessionResult = await sessionResponse.json();
 
-      if (!sessionResponse.ok || !sessions.length) {
-        throw new Error('無法取得本場次資料，請聯絡主持人。');
-      }
+if (!sessionResponse.ok || !sessionResult.success || !sessionResult.session) {
+  throw new Error(
+    sessionResult.message || '無法取得本場次資料，請聯絡主持人。'
+  );
+}
 
-      const sessionId = sessions[0].id;
-
+const sessionId = sessionResult.session.id;
       // 依總分、答對題數排序，僅取前五位
       const playersUrl =
         `${baseUrl}/rest/v1/game_players?select=nickname,total_score,correct_count&session_id=eq.${encodeURIComponent(sessionId)}&order=total_score.desc,correct_count.desc&limit=5`;
