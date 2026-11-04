@@ -84,6 +84,9 @@
     <button id="endBtn" onclick="endGame()" style="background:#dc3545;">
   🛑 結束遊戲
 </button>
+    <button id="resetBtn" onclick="resetGame()" style="background:#6c42a5;">
+  🔄 重新開始遊戲
+</button>
 
     <p id="controlMessage" class="muted">
       等待主持人開始遊戲
@@ -310,6 +313,62 @@ async function endGame() {
 
   } catch (error) {
     message.textContent = '結束遊戲失敗：' + error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+  // 重新開始遊戲
+async function resetGame() {
+  const code = document.getElementById('joinCode').value.trim();
+  const message = document.getElementById('controlMessage');
+  const button = document.getElementById('resetBtn');
+
+  if (!code) {
+    message.textContent = '請先輸入遊戲代碼';
+    return;
+  }
+
+  if (!confirm(
+    '⚠️ 確定要重新開始遊戲嗎？\n\n' +
+    '這將會清除：\n' +
+    '1. 所有已加入的玩家及暱稱\n' +
+    '2. 所有玩家的總分及答對題數\n' +
+    '3. 本場所有作答紀錄\n\n' +
+    '原本題庫會保留，玩家必須重新加入！'
+  )) {
+    return;
+  }
+
+  button.disabled = true;
+  message.textContent = '正在清除本場遊戲資料……';
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': PUBLISHABLE_KEY
+      },
+      body: JSON.stringify({
+        action: 'reset',
+        join_code: code
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || '重新開始遊戲失敗');
+    }
+
+    message.textContent =
+      '🔄 遊戲已重新設定完成！\n等待玩家重新加入。';
+
+    // 更新主持人畫面上的玩家名單
+    await loadPlayers();
+
+  } catch (error) {
+    message.textContent = '重新開始失敗：' + error.message;
   } finally {
     button.disabled = false;
   }
