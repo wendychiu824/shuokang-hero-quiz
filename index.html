@@ -222,16 +222,24 @@ if (!sessionResponse.ok || !sessionResult.success || !sessionResult.session) {
 const sessionId = sessionResult.session.id;
 const baseUrl = API_URL.replace('/functions/v1/game-api', '');
       
-      // 依總分、答對題數排序，僅取前五位
-      const playersUrl =
-        `${baseUrl}/rest/v1/game_players?select=nickname,total_score,correct_count&session_id=eq.${encodeURIComponent(sessionId)}&order=total_score.desc,correct_count.desc&limit=5`;
+// 透過 game-api 取得最終前五名
+const leaderboardUrl =
+  `${API_URL}?action=leaderboard&join_code=${encodeURIComponent(joinCode)}&_=${Date.now()}`;
 
-      const playersResponse = await fetch(playersUrl, { headers });
-      const players = await playersResponse.json();
+const leaderboardResponse = await fetch(leaderboardUrl, {
+  headers: { 'apikey': API_KEY },
+  cache: 'no-store'
+});
 
-      if (!playersResponse.ok) {
-        throw new Error('讀取排行榜失敗，請確認資料讀取權限。');
-      }
+const leaderboardResult = await leaderboardResponse.json();
+
+if (!leaderboardResponse.ok || !leaderboardResult.success) {
+  throw new Error(
+    leaderboardResult.message || '讀取排行榜失敗'
+  );
+}
+
+const players = leaderboardResult.players || [];
 
       leaderboardRows.replaceChildren();
 
