@@ -253,7 +253,7 @@ async function loginHost() {
   message.textContent = '正在驗證登入……';
 
   try {
-    const response = await hostFetch({
+    const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
