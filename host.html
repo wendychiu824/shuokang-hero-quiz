@@ -57,6 +57,45 @@
       width: 100%;
     }
     #message { white-space: pre-wrap; line-height: 1.6; }
+    textarea, select {
+  width: 100%;
+  padding: 12px;
+  margin: 6px 0 12px;
+  border-radius: 8px;
+  border: 1px solid #565b80;
+  background: #10142b;
+  color: white;
+  font-size: 16px;
+  font-family: inherit;
+}
+
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.question-item {
+  background: #171d39;
+  border: 1px solid #41486e;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 12px 0;
+}
+
+.question-item p {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.question-actions {
+  margin-top: 12px;
+}
+
+.form-label {
+  display: block;
+  color: #c3c7e7;
+  margin-top: 10px;
+}
   </style>
 </head>
 <body>
@@ -146,6 +185,85 @@
       🚪 登出主持人帳號
     </button>
   </div>
+    <!-- 題庫管理區 -->
+  <div class="card">
+    <h2>📚 題庫管理</h2>
+    <p class="muted">
+      可新增、修改及刪除遊戲題目。遊戲進行中無法修改題庫。
+    </p>
+
+    <button onclick="loadQuestionBank()">
+      🔄 重新載入題庫
+    </button>
+
+    <p id="questionBankMessage" class="muted">
+      等待載入題庫……
+    </p>
+
+    <div id="questionList"></div>
+
+    <hr style="border-color:#41486e;margin:24px 0;">
+
+    <h2 id="questionFormTitle">➕ 新增題目</h2>
+
+    <input type="hidden" id="editingQuestionId">
+
+    <label class="form-label">題目內容</label>
+    <textarea
+      id="questionText"
+      placeholder="請輸入題目內容"
+    ></textarea>
+
+    <label class="form-label">選項 A</label>
+    <input id="optionA" placeholder="請輸入選項 A">
+
+    <label class="form-label">選項 B</label>
+    <input id="optionB" placeholder="請輸入選項 B">
+
+    <label class="form-label">選項 C</label>
+    <input id="optionC" placeholder="請輸入選項 C">
+
+    <label class="form-label">選項 D</label>
+    <input id="optionD" placeholder="請輸入選項 D">
+
+    <label class="form-label">正確答案</label>
+    <select id="correctOption">
+      <option value="0">A</option>
+      <option value="1">B</option>
+      <option value="2">C</option>
+      <option value="3">D</option>
+    </select>
+
+    <label class="form-label">答題分數</label>
+    <input
+      type="number"
+      id="questionPoints"
+      value="100"
+      min="0"
+      step="1"
+    >
+
+    <label class="form-label">答案解析（選填）</label>
+    <textarea
+      id="questionExplanation"
+      placeholder="請輸入答案解析"
+    ></textarea>
+
+    <button
+      id="saveQuestionBtn"
+      onclick="saveQuestion()"
+      style="background:#159b78;"
+    >
+      💾 儲存題目
+    </button>
+
+    <button
+      onclick="clearQuestionForm()"
+      style="background:#555;"
+    >
+      清除表單
+    </button>
+  </div>
 </div>
 
 
@@ -229,7 +347,11 @@ function showHostPanel() {
   document.getElementById('loginPanel').style.display = 'none';
   document.getElementById('hostPanel').style.display = 'block';
 
+  // 啟動主持人登入倒數
   startHostCountdown();
+
+  // 登入成功後，自動載入題庫
+  loadQuestionBank();
 }
 
 function showLoginPanel(message = '請輸入主持人密碼') {
@@ -348,6 +470,276 @@ const response = await fetch(API_URL, {
 return response;
 };
 
+// 讀取主持人完整題庫
+async function loadQuestionBank() {
+  const code = document.getElementById('joinCode').value.trim();
+  const message = document.getElementById('questionBankMessage');
+  const list = document.getElementById('questionList');
+
+  if (!code) {
+    message.textContent = '請先輸入遊戲代碼';
+    return;
+  }
+
+  message.textContent = '正在載入題庫……';
+  list.innerHTML = '';
+
+  try {
+    const response = await hostFetch({
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': PUBLISHABLE_KEY
+      },
+      body: JSON.stringify({
+        action: 'question_list',
+        join_code: code
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || '讀取題庫失敗');
+    }
+
+    const questions = result.questions || [];
+
+    if (questions.length === 0) {
+      message.textContent = '目前尚無題目，請新增題目。';
+      return;
+    }
+
+    message.textContent = `目前共有 ${questions.length} 題`;
+
+    questions.forEach((question) => {
+      const item = document.createElement('div');
+      item.className = 'question-item';
+
+      const title = document.createElement('h3');
+      title.textContent =
+        `第 ${question.question_order} 題｜${question.question_text}`;
+
+      const options = document.createElement('p');
+      options.textContent =
+        `A. ${question.option_a}\n` +
+        `B. ${question.option_b}\n` +
+        `C. ${question.option_c}\n` +
+        `D. ${question.option_d}`;
+
+      const answer = document.createElement('p');
+      answer.textContent =
+        `正確答案：${['A', 'B', 'C', 'D'][question.correct_option]}｜` +
+        `分數：${question.points}`;
+
+      const explanation = document.createElement('p');
+      explanation.textContent =
+        `解析：${question.explanation || '尚未設定'}`;
+
+      const actions = document.createElement('div');
+      actions.className = 'question-actions';
+
+      const editButton = document.createElement('button');
+      editButton.textContent = '✏️ 編輯';
+      editButton.onclick = () => editQuestion(question);
+
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = '🗑️ 刪除';
+      deleteButton.style.background = '#dc3545';
+      deleteButton.onclick = () => deleteQuestion(question);
+
+      actions.append(editButton, deleteButton);
+      item.append(title, options, answer, explanation, actions);
+      list.appendChild(item);
+    });
+
+  } catch (error) {
+    message.textContent = '載入題庫失敗：' + error.message;
+  }
+}
+// 新增或修改題目
+async function saveQuestion() {
+  const code = document.getElementById('joinCode').value.trim();
+  const questionId = document.getElementById('editingQuestionId').value;
+  const message = document.getElementById('questionBankMessage');
+  const button = document.getElementById('saveQuestionBtn');
+
+  const questionText = document.getElementById('questionText').value.trim();
+  const optionA = document.getElementById('optionA').value.trim();
+  const optionB = document.getElementById('optionB').value.trim();
+  const optionC = document.getElementById('optionC').value.trim();
+  const optionD = document.getElementById('optionD').value.trim();
+  const correctOption = Number(document.getElementById('correctOption').value);
+  const points = Number(document.getElementById('questionPoints').value);
+  const explanation = document.getElementById('questionExplanation').value.trim();
+
+  if (!code || !questionText || !optionA || !optionB || !optionC || !optionD) {
+    message.textContent = '請完整填寫遊戲代碼、題目及四個選項';
+    return;
+  }
+
+  if (!Number.isInteger(points) || points < 0) {
+    message.textContent = '題目分數必須是大於或等於 0 的整數';
+    return;
+  }
+
+  const action = questionId ? 'question_update' : 'question_add';
+
+  if (!confirm(questionId ? '確定要儲存這題的修改嗎？' : '確定要新增這道題目嗎？')) {
+    return;
+  }
+
+  button.disabled = true;
+  message.textContent = questionId ? '正在修改題目……' : '正在新增題目……';
+
+  try {
+    const response = await hostFetch({
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': PUBLISHABLE_KEY
+      },
+      body: JSON.stringify({
+        action,
+        join_code: code,
+        question_id: questionId || undefined,
+        question_text: questionText,
+        option_a: optionA,
+        option_b: optionB,
+        option_c: optionC,
+        option_d: optionD,
+        correct_option: correctOption,
+        points,
+        explanation
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || '儲存題目失敗');
+    }
+
+    message.textContent = result.message || '題目儲存成功！';
+
+    clearQuestionForm();
+    await loadQuestionBank();
+
+  } catch (error) {
+    message.textContent = '儲存題目失敗：' + error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+// 編輯題目：將原有資料帶入表單
+function editQuestion(question) {
+  document.getElementById('editingQuestionId').value = question.id;
+
+  document.getElementById('questionText').value =
+    question.question_text || '';
+
+  document.getElementById('optionA').value =
+    question.option_a || '';
+
+  document.getElementById('optionB').value =
+    question.option_b || '';
+
+  document.getElementById('optionC').value =
+    question.option_c || '';
+
+  document.getElementById('optionD').value =
+    question.option_d || '';
+
+  document.getElementById('correctOption').value =
+    String(question.correct_option);
+
+  document.getElementById('questionPoints').value =
+    question.points ?? 100;
+
+  document.getElementById('questionExplanation').value =
+    question.explanation || '';
+
+  document.getElementById('questionFormTitle').textContent =
+    '✏️ 修改第 ' + question.question_order + ' 題';
+
+  document.getElementById('saveQuestionBtn').textContent =
+    '💾 儲存修改';
+
+  document.getElementById('questionBankMessage').textContent =
+    '目前正在編輯第 ' + question.question_order + ' 題';
+
+  document.getElementById('questionFormTitle')
+    .scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// 清除表單，恢復新增模式
+function clearQuestionForm() {
+  document.getElementById('editingQuestionId').value = '';
+  document.getElementById('questionText').value = '';
+  document.getElementById('optionA').value = '';
+  document.getElementById('optionB').value = '';
+  document.getElementById('optionC').value = '';
+  document.getElementById('optionD').value = '';
+  document.getElementById('correctOption').value = '0';
+  document.getElementById('questionPoints').value = '100';
+  document.getElementById('questionExplanation').value = '';
+
+  document.getElementById('questionFormTitle').textContent =
+    '➕ 新增題目';
+
+  document.getElementById('saveQuestionBtn').textContent =
+    '💾 儲存題目';
+}
+// 刪除題目
+async function deleteQuestion(question) {
+  const code = document.getElementById('joinCode').value.trim();
+  const message = document.getElementById('questionBankMessage');
+
+  if (!code) {
+    message.textContent = '請先輸入遊戲代碼';
+    return;
+  }
+
+  if (!confirm(
+    `確定要刪除第 ${question.question_order} 題嗎？\n\n` +
+    `${question.question_text}\n\n` +
+    '刪除後無法復原！'
+  )) {
+    return;
+  }
+
+  message.textContent = '正在刪除題目……';
+
+  try {
+    const response = await hostFetch({
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': PUBLISHABLE_KEY
+      },
+      body: JSON.stringify({
+        action: 'question_delete',
+        join_code: code,
+        question_id: question.id
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || '刪除題目失敗');
+    }
+
+    clearQuestionForm();
+    await loadQuestionBank();
+
+    message.textContent =
+      result.message || '題目刪除成功！';
+
+  } catch (error) {
+    message.textContent = '刪除題目失敗：' + error.message;
+  }
+}  
 // 開始遊戲
 async function startGame() {
   const code = document.getElementById('joinCode').value.trim();
