@@ -89,6 +89,24 @@
 
 <!-- 主持人遊戲控制台：登入後才顯示 -->
 <div id="hostPanel" style="display:none;">
+  
+  <div id="hostLoginStatus" style="
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: bold;
+">
+ <div id="hostTokenCountdown" style="
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 18px;
+">
+  ⏳ 登入期限計算中...
+</div>
+  🟢 主持人已登入
+</div>
 
   <h1>⚡ 碩康集團｜主持人控制台</h1>
   <p class="muted">英雄集結搶答賽</p>
@@ -158,11 +176,60 @@ const API_URL =
 
 const PUBLISHABLE_KEY =
   'sb_publishable_kgSXj6Zbk7QpG4Ien7q6TA_IVfAd-wf';
+// 主持人登入憑證剩餘時間倒數
+let hostCountdownTimer = null;
 
+function updateHostCountdown() {
+  const countdown = document.getElementById('hostTokenCountdown');
+
+  if (!countdown) return;
+
+  const expiry = Number(
+    sessionStorage.getItem('host_token_expiry')
+  );
+
+if (!expiry || Date.now() >= expiry) {
+  logoutHost();
+  return;
+}
+
+  const remaining = expiry - Date.now();
+
+  const hours = Math.floor(remaining / 3600000);
+  const minutes = Math.floor((remaining % 3600000) / 60000);
+  const seconds = Math.floor((remaining % 60000) / 1000);
+
+  countdown.textContent =
+    `⏳ 登入憑證剩餘時間：${hours} 小時 ${minutes} 分 ${seconds} 秒`;
+}
+
+// 啟動倒數，每秒更新
+function startHostCountdown() {
+  if (hostCountdownTimer) {
+    clearInterval(hostCountdownTimer);
+  }
+
+  updateHostCountdown();
+
+  hostCountdownTimer = setInterval(
+    updateHostCountdown,
+    1000
+  );
+}
+
+// 停止倒數
+function stopHostCountdown() {
+  if (hostCountdownTimer) {
+    clearInterval(hostCountdownTimer);
+    hostCountdownTimer = null;
+  }
+}
 // 主持人登入狀態管理
 function showHostPanel() {
   document.getElementById('loginPanel').style.display = 'none';
   document.getElementById('hostPanel').style.display = 'block';
+
+  startHostCountdown();
 }
 
 function showLoginPanel(message = '請輸入主持人密碼') {
@@ -223,8 +290,14 @@ async function loginHost() {
 
 // 主持人登出
 function logoutHost() {
+  // 停止登入倒數
+  stopHostCountdown();
+
+  // 清除登入憑證
   sessionStorage.removeItem('host_token');
   sessionStorage.removeItem('host_token_expiry');
+
+  // 返回登入畫面
   showLoginPanel('已登出，請重新登入');
 }
 
