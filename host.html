@@ -365,7 +365,7 @@ async function startGame() {
   message.textContent = '正在啟動遊戲...';
 
   try {
-　　const response = await fetch(API_URL, {
+　　const response = await hostFetch({
  　　 method: 'POST',
       headers: {
         'Content-Type': 'application/json',
