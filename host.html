@@ -247,10 +247,6 @@ if (document.readyState === 'loading') {
 } else {
   restoreHostLogin();
 }
-
-// 開始遊戲
-async function startGame() {
-  
 // 主持人專用 API：自動附加登入憑證
 async function hostFetch(options) {
   const token = sessionStorage.getItem('host_token');
@@ -266,11 +262,11 @@ async function hostFetch(options) {
   const body = JSON.parse(options.body || '{}');
   body.host_token = token;
 
-  const response = await hostFetch({
-    ...options,
-    body: JSON.stringify(body)
-  });
-
+const response = await fetch(API_URL, {
+  ...options,
+  body: JSON.stringify(body)
+});
+  
   if (response.status === 401) {
     logoutHost();
     throw new Error('主持人登入已失效，請重新登入');
@@ -279,6 +275,8 @@ async function hostFetch(options) {
   return response;
 }
 
+// 開始遊戲
+async function startGame() {
   const code = document.getElementById('joinCode').value.trim();
   const message = document.getElementById('controlMessage');
   const button = document.getElementById('startBtn');
@@ -294,8 +292,8 @@ async function hostFetch(options) {
   message.textContent = '正在啟動遊戲...';
 
   try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
+　　const response = await hostFetch({
+ 　　 method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'apikey': PUBLISHABLE_KEY
