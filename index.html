@@ -199,23 +199,149 @@
       border: 1px solid #d9b94f;
     }
 
-    @media (max-width: 480px) {
-      body {
-        padding: 12px;
-      }
 
-      main {
-        padding: 24px 18px;
-      }
+/* 電腦版：大螢幕 */
+@media (min-width: 1025px) {
+  body {
+    padding: 32px;
+  }
 
-      #questionText {
-        font-size: 25px;
-      }
+  main {
+    max-width: 760px;
+    padding: 42px 40px;
+  }
 
-      .option {
-        font-size: 20px;
-      }
-    }
+  h1 {
+    font-size: 38px;
+  }
+
+  #questionText {
+    font-size: 34px;
+  }
+
+  .option {
+    font-size: 27px;
+    padding: 24px;
+    margin: 18px 0;
+  }
+
+  button {
+    font-size: 26px;
+    padding: 21px;
+  }
+}
+
+/* 平板版：中型螢幕 */
+@media (min-width: 481px) and (max-width: 1024px) {
+  body {
+    padding: 20px;
+  }
+
+  main {
+    max-width: 620px;
+    padding: 30px 24px;
+  }
+
+  h1 {
+    font-size: 32px;
+  }
+
+  #questionText {
+    font-size: 28px;
+  }
+
+  .option {
+    font-size: 22px;
+    padding: 19px;
+  }
+
+  button {
+    font-size: 22px;
+  }
+}
+
+/* 手機版：直式操作 */
+@media (max-width: 480px) {
+  body {
+    padding: 12px;
+    display: block;
+  }
+
+  main {
+    width: 100%;
+    max-width: 100%;
+    margin: 12px auto;
+    padding: 22px 16px;
+    border-radius: 18px;
+  }
+
+  .symbol {
+    font-size: 48px;
+  }
+
+  h1 {
+    font-size: 27px;
+  }
+
+  .sub {
+    font-size: 17px;
+    margin-bottom: 22px;
+  }
+
+  label {
+    font-size: 18px;
+  }
+
+  input {
+    font-size: 19px;
+    padding: 15px;
+  }
+
+  button {
+    font-size: 20px;
+    padding: 17px;
+  }
+
+  #message {
+    font-size: 17px;
+  }
+
+  #questionText {
+    font-size: 24px;
+    line-height: 1.6;
+  }
+
+  .option {
+    font-size: 19px;
+    line-height: 1.5;
+    padding: 17px 14px;
+    margin: 12px 0;
+  }
+
+  #leaderboardPanel {
+    padding: 20px 12px;
+  }
+
+  #leaderboardPanel h2 {
+    font-size: 25px;
+  }
+
+  #leaderboardPanel .leaderboard-sub {
+    font-size: 16px;
+  }
+
+  .rank-row {
+    grid-template-columns: 42px 1fr auto;
+    gap: 6px;
+    padding: 12px 9px;
+    font-size: 16px;
+  }
+
+  .rank-empty,
+  #leaderboardMessage {
+    font-size: 16px;
+  }
+}
 </style>
 
 </head>
