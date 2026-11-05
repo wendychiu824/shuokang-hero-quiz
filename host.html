@@ -248,7 +248,7 @@ if (document.readyState === 'loading') {
   restoreHostLogin();
 }
 // 主持人專用 API：自動附加登入憑證
-async function hostFetch(options) {
+window.hostFetch = async function(options) {
   const token = sessionStorage.getItem('host_token');
   const expiry = Number(
     sessionStorage.getItem('host_token_expiry')
@@ -272,8 +272,8 @@ const response = await fetch(API_URL, {
     throw new Error('主持人登入已失效，請重新登入');
   }
 
-  return response;
-}
+return response;
+};
 
 // 開始遊戲
 async function startGame() {
