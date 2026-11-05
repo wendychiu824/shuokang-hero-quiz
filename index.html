@@ -201,33 +201,84 @@
 
 
 /* 電腦版：大螢幕 */
+
+/* 電腦版：大型寬版搶答畫面 */
 @media (min-width: 1025px) {
   body {
-    padding: 32px;
+    padding: 24px;
   }
 
   main {
-    max-width: 760px;
-    padding: 42px 40px;
+    width: 100%;
+    max-width: 1100px;
+    padding: 55px 65px;
+    border-radius: 30px;
+  }
+
+  .symbol {
+    font-size: 76px;
   }
 
   h1 {
-    font-size: 38px;
+    font-size: 46px;
+    margin: 16px 0;
   }
 
-  #questionText {
-    font-size: 34px;
+  .sub {
+    font-size: 24px;
   }
 
-  .option {
+  label {
+    font-size: 25px;
+  }
+
+  input {
     font-size: 27px;
-    padding: 24px;
-    margin: 18px 0;
+    padding: 22px;
   }
 
   button {
+    font-size: 29px;
+    padding: 24px;
+  }
+
+  #message {
+    font-size: 24px;
+  }
+
+  #questionPanel {
+    margin-top: 38px;
+  }
+
+  #questionText {
+    font-size: 40px;
+    line-height: 1.7;
+    margin: 30px 0;
+  }
+
+  .option {
+    font-size: 30px;
+    line-height: 1.6;
+    padding: 28px 32px;
+    margin: 20px 0;
+    border-radius: 18px;
+  }
+
+  #questionMessage {
+    font-size: 25px;
+  }
+
+  #leaderboardPanel {
+    padding: 32px;
+  }
+
+  #leaderboardPanel h2 {
+    font-size: 38px;
+  }
+
+  .rank-row {
     font-size: 26px;
-    padding: 21px;
+    padding: 20px;
   }
 }
 
