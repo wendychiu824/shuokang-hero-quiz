@@ -6,116 +6,218 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#11152b">
   <title>碩康集團英雄集結搶答賽</title>
-  <style>
+ 
+<style>
     * { box-sizing: border-box; }
+
     body {
-      margin: 0; min-height: 100vh;
-      display: grid; place-items: center; padding: 24px;
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
       font-family: system-ui, "Noto Sans TC", sans-serif;
       color: #fff;
       background: radial-gradient(circle at top, #34346b, #11152b 65%);
+      font-size: 20px;
     }
+
     main {
-      width: 100%; max-width: 420px; padding: 28px 22px;
-      border: 1px solid #55547c; border-radius: 24px;
+      width: 100%;
+      max-width: 580px;
+      padding: 32px 26px;
+      border: 1px solid #55547c;
+      border-radius: 24px;
       background: rgba(24, 28, 55, .96);
       box-shadow: 0 20px 60px #0005;
     }
-    .symbol { text-align: center; font-size: 46px; }
-    h1 { text-align: center; font-size: 25px; margin: 8px 0; }
-    .sub { text-align: center; color: #c3c7e7; margin-bottom: 26px; }
-    label { display: block; margin: 16px 0 7px; font-weight: 600; }
-    input {
-      width: 100%; padding: 14px; border-radius: 12px;
-      border: 1px solid #565b80; background: #10142b;
-      color: white; font-size: 17px; outline-offset: 3px;
+
+    .symbol {
+      text-align: center;
+      font-size: 64px;
     }
+
+    h1 {
+      text-align: center;
+      font-size: 34px;
+      margin: 12px 0;
+    }
+
+    .sub {
+      text-align: center;
+      color: #c3c7e7;
+      margin-bottom: 30px;
+      font-size: 21px;
+    }
+
+    label {
+      display: block;
+      margin: 20px 0 9px;
+      font-weight: 600;
+      font-size: 21px;
+    }
+
+    input {
+      width: 100%;
+      padding: 18px;
+      border-radius: 12px;
+      border: 1px solid #565b80;
+      background: #10142b;
+      color: white;
+      font-size: 23px;
+      outline-offset: 3px;
+    }
+
     button {
-      width: 100%; padding: 15px; margin-top: 22px;
-      border: 0; border-radius: 12px; background: #8165ff;
-      color: white; font-size: 18px; font-weight: 700;
+      width: 100%;
+      padding: 19px;
+      margin-top: 24px;
+      border: 0;
+      border-radius: 12px;
+      background: #8165ff;
+      color: white;
+      font-size: 24px;
+      font-weight: 700;
       cursor: pointer;
     }
-    button:disabled { opacity: .6; cursor: wait; }
-    #message {
-      min-height: 48px; margin-top: 18px; text-align: center;
-      line-height: 1.6; white-space: pre-wrap; color: #e1e3ff;
+
+    button:disabled {
+      opacity: .6;
+      cursor: wait;
     }
+
+    #message {
+      min-height: 56px;
+      margin-top: 20px;
+      text-align: center;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      color: #e1e3ff;
+      font-size: 20px;
+    }
+
     .hidden { display: none; }
-#questionPanel {
-  margin-top: 24px;
-}
 
-.option {
-  width: 100%;
-  color: white;
-  cursor: pointer;
-  pointer-events: auto;
-  padding: 15px;
-  margin: 12px 0;
-  border: 1px solid #7775a8;
-  border-radius: 12px;
-  background: #292d50;
-  font-size: 16px;
-  line-height: 1.5;
-}
+    #questionPanel {
+      margin-top: 28px;
+    }
+
+    .option {
+      width: 100%;
+      color: white;
+      cursor: pointer;
+      pointer-events: auto;
+      padding: 20px;
+      margin: 15px 0;
+      border: 1px solid #7775a8;
+      border-radius: 14px;
+      background: #292d50;
+      font-size: 23px;
+      line-height: 1.6;
+    }
+
     .option:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
 
-.option:not(:disabled):hover {
-  background: #414875;
-}
+    .option:not(:disabled):hover {
+      background: #414875;
+    }
 
-#questionText {
-  line-height: 1.6;
-  margin: 18px 0;
-}
+    #questionText {
+      font-size: 29px;
+      font-weight: 700;
+      line-height: 1.7;
+      margin: 22px 0;
+    }
 
-#questionMessage {
-  text-align: center;
-  color: #c3c7e7;
-}
+    #questionMessage {
+      text-align: center;
+      color: #c3c7e7;
+      font-size: 21px;
+    }
 
     #leaderboardPanel {
-      margin-top: 24px;
-      padding: 20px 16px;
+      margin-top: 28px;
+      padding: 24px 20px;
       border: 1px solid #7770b5;
       border-radius: 18px;
       background: linear-gradient(160deg, #302b5c, #171b38);
     }
+
     #leaderboardPanel h2 {
-      margin: 0 0 8px;
+      margin: 0 0 12px;
       text-align: center;
       color: #ffe18a;
+      font-size: 30px;
     }
+
     #leaderboardPanel .leaderboard-sub {
       text-align: center;
       color: #d5d7f4;
-      margin: 0 0 18px;
+      margin: 0 0 20px;
+      font-size: 20px;
     }
+
     .rank-row {
       display: grid;
-      grid-template-columns: 54px 1fr auto;
+      grid-template-columns: 60px 1fr auto;
       align-items: center;
-      gap: 8px;
-      margin: 9px 0;
-      padding: 12px;
+      gap: 10px;
+      margin: 12px 0;
+      padding: 16px;
       border-radius: 12px;
       background: rgba(255,255,255,.09);
+      font-size: 21px;
     }
-    .rank-number { font-weight: 800; color: #ffe18a; }
-    .rank-name { overflow-wrap: anywhere; font-weight: 650; }
-    .rank-score { color: #ffe18a; font-weight: 800; white-space: nowrap; }
+
+    .rank-number {
+      font-weight: 800;
+      color: #ffe18a;
+    }
+
+    .rank-name {
+      overflow-wrap: anywhere;
+      font-weight: 650;
+    }
+
+    .rank-score {
+      color: #ffe18a;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
     .rank-empty, #leaderboardMessage {
       text-align: center;
       color: #d5d7f4;
       line-height: 1.6;
+      font-size: 20px;
     }
-    .rank-row:nth-of-type(1) { border: 1px solid #d9b94f; }
 
-  </style>
+    .rank-row:nth-of-type(1) {
+      border: 1px solid #d9b94f;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 12px;
+      }
+
+      main {
+        padding: 24px 18px;
+      }
+
+      #questionText {
+        font-size: 25px;
+      }
+
+      .option {
+        font-size: 20px;
+      }
+    }
+</style>
+
 </head>
 <body>
   <main>
