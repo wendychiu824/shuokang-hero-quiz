@@ -923,6 +923,8 @@ function createLeaderboardConfetti() {
     if (leaderboardLoaded) return;
 
     leaderboardPanel.classList.remove('hidden');
+    createLeaderboardConfetti();
+    
     questionPanel.classList.add('hidden');
     waiting.classList.add('hidden');
     leaderboardMessage.textContent = '正在整理最終成績…';
