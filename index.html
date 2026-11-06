@@ -877,6 +877,47 @@
   const leaderboardMessage = document.getElementById('leaderboardMessage');
   let leaderboardLoaded = false;
 
+  
+// ===== 英雄榮耀榜：金紫銀彩花動畫 =====
+function createLeaderboardConfetti() {
+  const panel = document.getElementById('leaderboardPanel');
+
+  if (!panel || panel.dataset.confettiCreated === 'true') return;
+
+  panel.dataset.confettiCreated = 'true';
+
+  const colors = [
+    '#ffd700',
+    '#fff0a6',
+    '#a78bfa',
+    '#c4b5fd',
+    '#e5e7eb',
+    '#f0c36d'
+  ];
+
+  for (let i = 0; i < 45; i++) {
+    const piece = document.createElement('div');
+
+    piece.className = 'confetti-piece';
+
+    piece.style.left = `${Math.random() * 100}%`;
+    piece.style.backgroundColor =
+      colors[Math.floor(Math.random() * colors.length)];
+
+    piece.style.width = `${5 + Math.random() * 7}px`;
+    piece.style.height = `${9 + Math.random() * 12}px`;
+
+    piece.style.animationDuration =
+      `${6 + Math.random() * 7}s`;
+
+    piece.style.animationDelay =
+      `${Math.random() * 8}s`;
+
+    panel.appendChild(piece);
+  }
+}
+
+  
   // 遊戲結束後，讀取本場次前五名
   async function loadFinalLeaderboard(joinCode) {
     if (leaderboardLoaded) return;
