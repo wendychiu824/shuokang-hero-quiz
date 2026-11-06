@@ -504,104 +504,239 @@
     animation: none;
   }
 }
-/* ===== 英雄榮耀榜：前三名獎盃動畫 ===== */
+
+/* ===== 碩康英雄榮耀榜：完整頒獎舞台 ===== */
+
+#leaderboardPanel {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(117, 73, 255, .38), transparent 55%),
+    linear-gradient(160deg, #170b36, #09051c 75%);
+  border: 1px solid rgba(255, 215, 120, .45);
+  border-radius: 28px;
+  padding: 30px 18px;
+  box-shadow: 0 0 45px rgba(126, 75, 255, .25);
+}
+
+/* 舞台背景光 */
+#leaderboardPanel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 25%, rgba(255, 211, 100, .16), transparent 35%),
+    radial-gradient(circle at 15% 65%, rgba(120, 75, 255, .18), transparent 35%),
+    radial-gradient(circle at 85% 65%, rgba(120, 75, 255, .18), transparent 35%);
+  animation: stageGlow 5s ease-in-out infinite alternate;
+}
+
+@keyframes stageGlow {
+  from { opacity: .55; }
+  to { opacity: 1; }
+}
+
+/* ===== 三座獎盃舞台 ===== */
 
 .trophy-podium {
+  position: relative;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  gap: 24px;
-  margin: 35px auto 45px;
+  gap: 22px;
   max-width: 850px;
-  padding: 20px 10px;
+  margin: 35px auto 38px;
+  padding: 35px 10px 20px;
+  z-index: 1;
+}
+
+/* 獎盃光環 */
+.trophy-item::before {
+  content: "";
+  position: absolute;
+  width: 135px;
+  height: 135px;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 2px solid rgba(255, 215, 100, .7);
+  border-left-color: transparent;
+  border-right-color: rgba(170, 130, 255, .8);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(255, 205, 80, .35);
+  animation: trophyOrbit 8s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes trophyOrbit {
+  from { transform: translateX(-50%) rotate(0deg); }
+  to { transform: translateX(-50%) rotate(360deg); }
 }
 
 .trophy-item {
   position: relative;
   display: flex;
+  flex: 1;
+  min-width: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex: 1;
-  min-width: 0;
-  padding: 22px 8px;
+  padding: 25px 8px;
   border-radius: 22px;
-  background: rgba(255,255,255,.06);
-  animation: trophyFloat 3s ease-in-out infinite;
+  background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.025));
+  animation: trophyFloat 3.5s ease-in-out infinite;
+  z-index: 1;
 }
 
 .trophy-icon {
   position: relative;
-  z-index: 1;
-  font-size: 76px;
-  line-height: 1.3;
-  filter: drop-shadow(0 0 12px currentColor);
+  z-index: 2;
+  font-size: 82px;
+  line-height: 1.4;
+  filter: drop-shadow(0 0 15px currentColor);
+  animation: trophyShine 2.5s ease-in-out infinite;
+}
+
+@keyframes trophyFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+
+@keyframes trophyShine {
+  0%, 100% { filter: drop-shadow(0 0 10px currentColor); }
+  50% { filter: drop-shadow(0 0 25px currentColor); }
 }
 
 .trophy-rank {
   font-size: 36px;
   font-weight: 900;
+  text-shadow: 0 0 15px currentColor;
 }
 
 .trophy-label {
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 900;
   margin-top: 5px;
 }
 
 .trophy-item.gold {
-  min-height: 235px;
-  border: 2px solid #ffd65c;
-  box-shadow: 0 0 28px rgba(255,205,55,.35);
-  color: #ffd65c;
-  animation-delay: 0s;
+  min-height: 245px;
+  color: #ffdf70;
+  border: 2px solid #ffdc70;
+  box-shadow: 0 0 35px rgba(255, 205, 55, .4);
 }
 
 .trophy-item.silver {
-  min-height: 195px;
+  min-height: 205px;
+  color: #e3eaff;
   border: 2px solid #dce8ff;
-  box-shadow: 0 0 22px rgba(190,210,255,.3);
-  color: #dce8ff;
+  box-shadow: 0 0 25px rgba(190, 210, 255, .3);
   animation-delay: .5s;
 }
 
 .trophy-item.bronze {
-  min-height: 175px;
+  min-height: 185px;
+  color: #f1ad79;
   border: 2px solid #e9a16a;
-  box-shadow: 0 0 22px rgba(233,161,106,.3);
-  color: #e9a16a;
+  box-shadow: 0 0 25px rgba(233, 161, 106, .3);
   animation-delay: 1s;
 }
 
 .trophy-item.gold .trophy-icon {
-  filter: sepia(1) saturate(3) hue-rotate(350deg)
-    drop-shadow(0 0 15px #ffd65c);
+  filter: sepia(1) saturate(3) hue-rotate(350deg) drop-shadow(0 0 18px #ffd65c);
 }
 
 .trophy-item.silver .trophy-icon {
-  filter: grayscale(1) brightness(1.5)
-    drop-shadow(0 0 15px #dce8ff);
+  filter: grayscale(1) brightness(1.5) drop-shadow(0 0 18px #dce8ff);
 }
 
 .trophy-item.bronze .trophy-icon {
-  filter: sepia(1) saturate(3) hue-rotate(335deg)
-    drop-shadow(0 0 15px #e9a16a);
+  filter: sepia(1) saturate(3) hue-rotate(335deg) drop-shadow(0 0 18px #e9a16a);
 }
 
-@keyframes trophyFloat {
-  0%, 100% {
+/* ===== 金色立體標題 ===== */
+
+#leaderboardPanel > h2 {
+  color: #ffe39a;
+  font-size: 38px;
+  font-weight: 1000;
+  letter-spacing: 3px;
+  text-align: center;
+  text-shadow:
+    0 2px 0 #a66c18,
+    0 4px 0 #75440c,
+    0 0 18px rgba(255, 205, 70, .85);
+}
+
+/* ===== 背景彩花 ===== */
+
+.confetti-piece {
+  position: absolute;
+  top: -35px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 2px;
+  opacity: .9;
+  animation-name: confettiFall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translate3d(0, -30px, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% { opacity: 1; }
+  90% { opacity: .9; }
+  100% {
+    transform: translate3d(35px, 850px, 0) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* ===== 排行榜玩家卡片 ===== */
+
+#leaderboardRows {
+  position: relative;
+  z-index: 2;
+}
+
+#leaderboardRows .rank-row {
+  animation: rankAppear .7s ease both;
+}
+
+#leaderboardRows .rank-row:nth-child(1) { animation-delay: .15s; }
+#leaderboardRows .rank-row:nth-child(2) { animation-delay: .3s; }
+#leaderboardRows .rank-row:nth-child(3) { animation-delay: .45s; }
+#leaderboardRows .rank-row:nth-child(4) { animation-delay: .6s; }
+#leaderboardRows .rank-row:nth-child(5) { animation-delay: .75s; }
+
+@keyframes rankAppear {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
     transform: translateY(0);
   }
-  50% {
-    transform: translateY(-12px);
-  }
 }
 
+/* ===== 手機版 ===== */
+
 @media (max-width: 480px) {
+  #leaderboardPanel {
+    padding: 22px 10px;
+  }
+
   .trophy-podium {
-    gap: 8px;
-    margin: 20px auto 30px;
-    padding: 10px 0;
+    gap: 7px;
+    margin: 20px auto 28px;
+    padding: 25px 0 12px;
   }
 
   .trophy-item {
@@ -609,36 +744,38 @@
     border-radius: 14px;
   }
 
-  .trophy-item.gold {
-    min-height: 175px;
+  .trophy-item.gold { min-height: 175px; }
+  .trophy-item.silver { min-height: 150px; }
+  .trophy-item.bronze { min-height: 135px; }
+
+  .trophy-item::before {
+    width: 85px;
+    height: 85px;
+    top: 12px;
   }
 
-  .trophy-item.silver {
-    min-height: 150px;
-  }
+  .trophy-icon { font-size: 48px; }
+  .trophy-rank { font-size: 25px; }
+  .trophy-label { font-size: 15px; }
 
-  .trophy-item.bronze {
-    min-height: 135px;
-  }
-
-  .trophy-icon {
-    font-size: 48px;
-  }
-
-  .trophy-rank {
+  #leaderboardPanel > h2 {
     font-size: 25px;
-  }
-
-  .trophy-label {
-    font-size: 15px;
+    letter-spacing: 1px;
   }
 }
 
+/* 減少動態效果設定 */
 @media (prefers-reduced-motion: reduce) {
-  .trophy-item {
-    animation: none;
+  .trophy-item,
+  .trophy-icon,
+  .trophy-item::before,
+  #leaderboardPanel::before,
+  .confetti-piece,
+  #leaderboardRows .rank-row {
+    animation: none !important;
   }
 }
+
 </style>  
   
 </head>
