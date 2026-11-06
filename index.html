@@ -203,7 +203,7 @@
 /* 電腦版：大螢幕 */
 
 /* 電腦版：寬版大型搶答畫面 */
-@media (min-width: 1025px) {
+@media (min-width: 769px) {
   body {
     padding: 12px;
   }
@@ -269,9 +269,17 @@
   text-align: center;
 }
   #options {
-  display: grid;
+  display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
+  width: 100%;
+}
+
+#options > .option {
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
   #questionMessage {
