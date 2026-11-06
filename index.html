@@ -902,6 +902,87 @@ if (!questionResponse.ok || !questionResult.success) {
     }
   });
 </script>
+<!-- 🎵 電腦版宇宙英雄背景音樂 -->
+<audio id="heroMusic" loop preload="auto">
+  <source src="hero-space.mp3" type="audio/mpeg">
+</audio>
 
+<!-- 電腦版音樂控制按鈕 -->
+<button id="musicToggle" type="button"
+  style="
+    display:none;
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    z-index:9999;
+    width:auto;
+    padding:12px 20px;
+    border-radius:30px;
+    background:#292d50;
+    color:white;
+    border:1px solid #9b8cff;
+    font-size:16px;
+    cursor:pointer;
+  ">
+  🔊 關閉音樂
+</button>
+
+<script>
+(function () {
+  const isDesktop =
+    window.matchMedia('(min-width: 769px)').matches &&
+    window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  if (!isDesktop) return;
+
+  const music = document.getElementById('heroMusic');
+  const toggle = document.getElementById('musicToggle');
+
+  if (!music || !toggle) return;
+
+  music.volume = 0.35;
+  toggle.style.display = 'block';
+
+  let started = false;
+
+  async function startMusic() {
+    if (started || music.paused === false) return;
+
+    try {
+      await music.play();
+      started = true;
+      toggle.textContent = '🔊 關閉音樂';
+    } catch (error) {
+      // 瀏覽器阻擋自動播放時，等待玩家第一次操作
+    }
+  }
+
+  // 進入登入頁面時，先嘗試自動播放
+  startMusic();
+
+  // 若瀏覽器阻擋，第一次操作頁面後再播放
+  ['click', 'keydown', 'touchstart'].forEach(eventName => {
+    document.addEventListener(eventName, startMusic, {
+      once: true
+    });
+  });
+
+  // 電腦版音樂開關
+  toggle.addEventListener('click', async function () {
+    if (music.paused) {
+      try {
+        await music.play();
+        started = true;
+        toggle.textContent = '🔊 關閉音樂';
+      } catch (error) {
+        toggle.textContent = '⚠️ 無法播放音樂';
+      }
+    } else {
+      music.pause();
+      toggle.textContent = '🔇 開啟音樂';
+    }
+  });
+})();
+</script>
 </body>
 </html>
