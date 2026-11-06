@@ -886,12 +886,12 @@ if (!questionResponse.ok || !questionResult.success) {
         clearInterval(pollTimer);
       }
 
-      // 立即檢查一次，再每 2.5 秒更新
-      checkGameQuestion(joinCode);
+// 立即檢查一次，再每 1 秒更新
+checkGameQuestion(joinCode);
 
-      pollTimer = setInterval(() => {
-        checkGameQuestion(joinCode);
-      }, 2500);
+pollTimer = setInterval(() => {
+  checkGameQuestion(joinCode);
+}, 1000);
 
     } catch (error) {
       message.textContent =
