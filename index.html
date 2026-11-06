@@ -673,17 +673,19 @@
 
 /* ===== 背景彩花 ===== */
 
+
 .confetti-piece {
   position: absolute;
   top: -35px;
-  z-index: 0;
+  z-index: 5;
   pointer-events: none;
   border-radius: 2px;
-  opacity: .9;
+  opacity: .95;
   animation-name: confettiFall;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
 }
+
 
 @keyframes confettiFall {
   0% {
@@ -911,7 +913,7 @@ function createLeaderboardConfetti() {
       `${6 + Math.random() * 7}s`;
 
     piece.style.animationDelay =
-      `${Math.random() * 8}s`;
+      `${-Math.random() * 8}s`;
 
     panel.appendChild(piece);
   }
