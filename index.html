@@ -504,7 +504,141 @@
     animation: none;
   }
 }
+/* ===== 英雄榮耀榜：前三名獎盃動畫 ===== */
 
+.trophy-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 24px;
+  margin: 35px auto 45px;
+  max-width: 850px;
+  padding: 20px 10px;
+}
+
+.trophy-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  padding: 22px 8px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.06);
+  animation: trophyFloat 3s ease-in-out infinite;
+}
+
+.trophy-icon {
+  position: relative;
+  z-index: 1;
+  font-size: 76px;
+  line-height: 1.3;
+  filter: drop-shadow(0 0 12px currentColor);
+}
+
+.trophy-rank {
+  font-size: 36px;
+  font-weight: 900;
+}
+
+.trophy-label {
+  font-size: 20px;
+  font-weight: 800;
+  margin-top: 5px;
+}
+
+.trophy-item.gold {
+  min-height: 235px;
+  border: 2px solid #ffd65c;
+  box-shadow: 0 0 28px rgba(255,205,55,.35);
+  color: #ffd65c;
+  animation-delay: 0s;
+}
+
+.trophy-item.silver {
+  min-height: 195px;
+  border: 2px solid #dce8ff;
+  box-shadow: 0 0 22px rgba(190,210,255,.3);
+  color: #dce8ff;
+  animation-delay: .5s;
+}
+
+.trophy-item.bronze {
+  min-height: 175px;
+  border: 2px solid #e9a16a;
+  box-shadow: 0 0 22px rgba(233,161,106,.3);
+  color: #e9a16a;
+  animation-delay: 1s;
+}
+
+.trophy-item.gold .trophy-icon {
+  filter: sepia(1) saturate(3) hue-rotate(350deg)
+    drop-shadow(0 0 15px #ffd65c);
+}
+
+.trophy-item.silver .trophy-icon {
+  filter: grayscale(1) brightness(1.5)
+    drop-shadow(0 0 15px #dce8ff);
+}
+
+.trophy-item.bronze .trophy-icon {
+  filter: sepia(1) saturate(3) hue-rotate(335deg)
+    drop-shadow(0 0 15px #e9a16a);
+}
+
+@keyframes trophyFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@media (max-width: 480px) {
+  .trophy-podium {
+    gap: 8px;
+    margin: 20px auto 30px;
+    padding: 10px 0;
+  }
+
+  .trophy-item {
+    padding: 15px 3px;
+    border-radius: 14px;
+  }
+
+  .trophy-item.gold {
+    min-height: 175px;
+  }
+
+  .trophy-item.silver {
+    min-height: 150px;
+  }
+
+  .trophy-item.bronze {
+    min-height: 135px;
+  }
+
+  .trophy-icon {
+    font-size: 48px;
+  }
+
+  .trophy-rank {
+    font-size: 25px;
+  }
+
+  .trophy-label {
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trophy-item {
+    animation: none;
+  }
+}
 </style>  
   
 </head>
@@ -551,7 +685,27 @@
 </section>
 
     <section id="leaderboardPanel" class="hidden" aria-live="polite">
-      <div class="symbol">🏆</div>
+     <div class="trophy-podium">
+
+  <div class="trophy-item silver">
+    <div class="trophy-icon">🏆</div>
+    <div class="trophy-rank">2</div>
+    <div class="trophy-label">亞軍</div>
+  </div>
+
+  <div class="trophy-item gold">
+    <div class="trophy-icon">🏆</div>
+    <div class="trophy-rank">1</div>
+    <div class="trophy-label">冠軍</div>
+  </div>
+
+  <div class="trophy-item bronze">
+    <div class="trophy-icon">🏆</div>
+    <div class="trophy-rank">3</div>
+    <div class="trophy-label">季軍</div>
+  </div>
+
+</div>
       <h2>英雄榮耀榜 TOP 5</h2>
       <p class="leaderboard-sub">本次搶答賽最終排名</p>
       <div id="leaderboardRows"></div>
