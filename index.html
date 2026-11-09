@@ -1323,6 +1323,42 @@ if (!questionResponse.ok || !questionResult.success) {
     }
   }
 
+  // ===== 玩家大頭貼：照片預覽與檔案檢查 =====
+
+const avatarFileInput = document.getElementById('avatarFile');
+const avatarPreview = document.getElementById('avatarPreview');
+const avatarPreviewArea = document.getElementById('avatarPreviewArea');
+
+avatarFileInput.addEventListener('change', () => {
+  const file = avatarFileInput.files[0];
+
+  avatarPreviewArea.classList.add('hidden');
+  avatarPreview.removeAttribute('src');
+
+  if (!file) return;
+
+  const allowedTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/webp'
+  ];
+
+  if (!allowedTypes.includes(file.type)) {
+    alert('照片格式不正確，請上傳 JPG、PNG 或 WebP 圖片。');
+    avatarFileInput.value = '';
+    return;
+  }
+
+  if (file.size > 2 * 1024 * 1024) {
+    alert('照片大小不可超過 2 MB，請重新選擇。');
+    avatarFileInput.value = '';
+    return;
+  }
+
+  avatarPreview.src = URL.createObjectURL(file);
+  avatarPreviewArea.classList.remove('hidden');
+});
+  
   // 玩家加入遊戲
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
