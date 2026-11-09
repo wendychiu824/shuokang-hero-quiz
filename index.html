@@ -1415,71 +1415,89 @@ avatarFileInput.addEventListener('change', () => {
   avatarPreviewArea.classList.remove('hidden');
 });
   
-  // 玩家加入遊戲
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
 
-    joinButton.disabled = true;
-    message.textContent = '正在確認遊戲並加入，請稍候…';
+// 玩家加入遊戲
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
 
-    const joinCode =
-      document.getElementById('joinCode').value.trim();
+  joinButton.disabled = true;
+  message.textContent = '正在上傳大頭貼並加入遊戲，請稍候…';
 
-    const nickname =
-      document.getElementById('nickname').value.trim();
+  const joinCode =
+    document.getElementById('joinCode').value.trim();
 
-    try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': API_KEY
-        },
-        body: JSON.stringify({
-          action: 'join',
-          join_code: joinCode,
-          nickname: nickname
-        })
-      });
+  const nickname =
+    document.getElementById('nickname').value.trim();
 
-      const result = await response.json();
+  const avatarFile =
+    document.getElementById('avatarFile').files[0];
 
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || '加入失敗，請稍後再試。');
-      }
-
-      currentPlayerId = result.player.id;
-      currentJoinCode = joinCode;
-
-      form.classList.add('hidden');
-
-      document.getElementById('welcome').textContent =
-        `歡迎，${result.player.nickname}！`;
-
-      waiting.classList.remove('hidden');
-
-      message.textContent =
-        '加入成功！請留在此頁等待主持人開始。';
-
-      if (pollTimer) {
-        clearInterval(pollTimer);
-      }
-
-// 立即檢查一次，再每 1 秒更新
-checkGameQuestion(joinCode);
-
-pollTimer = setInterval(() => {
-  checkGameQuestion(joinCode);
-}, 1000);
-
-    } catch (error) {
-      message.textContent =
-        error.message || '連線失敗，請確認網路後重試。';
-
-    } finally {
-      joinButton.disabled = false;
+  try {
+    // 1. 確認玩家已選擇照片
+    if (!avatarFile) {
+      throw new Error('請先上傳玩家大頭貼照片。');
     }
-  });
+
+    // 2. 先上傳照片到 Supabase Storage
+    message.textContent = '正在上傳大頭貼…';
+
+    const avatarUrl = await uploadPlayerAvatar(avatarFile);
+
+    // 3. 照片上傳成功，再加入遊戲
+    message.textContent = '照片上傳成功，正在加入遊戲…';
+
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': API_KEY
+      },
+      body: JSON.stringify({
+        action: 'join',
+        join_code: joinCode,
+        nickname: nickname,
+        avatar_url: avatarUrl
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || '加入失敗，請稍後再試。');
+    }
+
+    currentPlayerId = result.player.id;
+    currentJoinCode = joinCode;
+
+    form.classList.add('hidden');
+
+    document.getElementById('welcome').textContent =
+      `歡迎，${result.player.nickname}！`;
+
+    waiting.classList.remove('hidden');
+
+    message.textContent =
+      '加入成功！請留在此頁等待主持人開始。';
+
+    if (pollTimer) {
+      clearInterval(pollTimer);
+    }
+
+    // 立即檢查一次，再每 1 秒更新
+    checkGameQuestion(joinCode);
+
+    pollTimer = setInterval(() => {
+      checkGameQuestion(joinCode);
+    }, 1000);
+
+  } catch (error) {
+    message.textContent =
+      error.message || '連線失敗，請確認網路後重試。';
+
+  } finally {
+    joinButton.disabled = false;
+  }
+});
 </script>
 <!-- 🎵 電腦版宇宙英雄背景音樂 -->
 <audio id="heroMusic" loop preload="auto">
