@@ -777,7 +777,31 @@
     animation: none !important;
   }
 }
+/* ===== 最終排行榜專屬畫面 ===== */
 
+/* 顯示排行榜時，隱藏登入及加入遊戲區塊 */
+main.leaderboard-mode > .symbol,
+main.leaderboard-mode > h1,
+main.leaderboard-mode > .sub,
+main.leaderboard-mode > #message,
+main.leaderboard-mode > #joinForm,
+main.leaderboard-mode > #waiting,
+main.leaderboard-mode > #questionPanel {
+  display: none !important;
+}
+
+/* 保留排行榜內的 SK 動畫，並調整尺寸 */
+.leaderboard-mode #leaderboardPanel .sk-logo-large {
+  width: 110px;
+  height: 85px;
+  font-size: 60px;
+  margin: 5px auto 15px;
+}
+
+/* 隱藏排行榜的額外說明文字 */
+#leaderboardPanel .leaderboard-sub {
+  display: none;
+}
 </style>  
   
 </head>
@@ -824,6 +848,9 @@
 </section>
 
     <section id="leaderboardPanel" class="hidden" aria-live="polite">
+        <div class="symbol">
+    <div class="sk-logo sk-logo-large">SK</div>
+  </div>
      <div class="trophy-podium">
 
   <div class="trophy-item silver">
