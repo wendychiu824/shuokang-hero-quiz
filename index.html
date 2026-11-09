@@ -780,13 +780,17 @@
 /* ===== 最終排行榜專屬畫面 ===== */
 
 /* 顯示排行榜時，隱藏登入及加入遊戲區塊 */
-main.leaderboard-mode > .symbol,
-main.leaderboard-mode > h1,
-main.leaderboard-mode > .sub,
-main.leaderboard-mode > #message,
-main.leaderboard-mode > #joinForm,
-main.leaderboard-mode > #waiting,
-main.leaderboard-mode > #questionPanel {
+/* ===== 最終排行榜只保留指定內容 ===== */
+
+main.leaderboard-mode > :not(#leaderboardPanel) {
+  display: none !important;
+}
+
+main.leaderboard-mode #leaderboardPanel {
+  display: block !important;
+}
+
+main.leaderboard-mode #leaderboardPanel .leaderboard-sub {
   display: none !important;
 }
 
