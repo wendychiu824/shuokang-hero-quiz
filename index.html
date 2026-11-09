@@ -1341,7 +1341,8 @@ podiumAvatarSlots.forEach((slot, index) => {
 
           const rankEl = document.createElement('span');
           rankEl.className = 'rank-number';
-          rankEl.textContent = ['🥇', '🥈', '🥉'][rank - 1] || `第 ${rank} 名`;
+          rankEl.textContent =
+           ['🥇', '🥈', '🥉'][rank - 1] || `${rank}`;
 
           const nameEl = document.createElement('span');
           nameEl.className = 'rank-name';
