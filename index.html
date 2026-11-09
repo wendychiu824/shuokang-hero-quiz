@@ -1667,6 +1667,14 @@ avatarFileInput.addEventListener('change', () => {
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
 
+  // 嘗試啟動全螢幕模式，讓遊戲畫面更完整
+  if (!document.fullscreenElement &&
+      document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(() => {
+      // 若瀏覽器不支援或拒絕全螢幕，不影響加入遊戲
+    });
+  }
+
   joinButton.disabled = true;
   message.textContent = '正在上傳大頭貼並加入遊戲，請稍候…';
 
