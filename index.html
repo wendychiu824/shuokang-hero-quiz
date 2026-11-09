@@ -1270,9 +1270,12 @@ if (!questionResponse.ok || !questionResult.success) {
             '請仔細閱讀題目，準備作答！';
         }
 
-        // 顯示題目
-        waiting.classList.add('hidden');
-        questionPanel.classList.remove('hidden');
+       // 顯示題目，隱藏等待及加入成功訊息
+       waiting.classList.add('hidden');
+       questionPanel.classList.remove('hidden');
+
+      // 清除玩家加入成功的提示
+      message.textContent = '';
 
         document.getElementById('questionNumber').textContent =
           `第 ${q.question_order} 題`;
