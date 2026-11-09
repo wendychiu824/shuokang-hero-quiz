@@ -600,6 +600,60 @@
   animation: trophyShine 2.5s ease-in-out infinite;
 }
 
+
+/* ===== 前三名玩家大頭貼 ===== */
+
+.podium-avatar {
+  position: relative;
+  z-index: 3;
+  width: 82px;
+  height: 82px;
+  margin-bottom: 8px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 50%;
+  border: 4px solid #ffffff;
+  box-shadow:
+    0 0 12px rgba(255, 255, 255, .6),
+    0 0 25px rgba(255, 210, 90, .45);
+  background: #242044;
+}
+
+/* 冠軍：金色相框 */
+.trophy-item.gold .podium-avatar {
+  border-color: #ffdf70;
+  box-shadow:
+    0 0 12px #ffdf70,
+    0 0 28px rgba(255, 195, 40, .8);
+}
+
+/* 亞軍：銀色相框 */
+.trophy-item.silver .podium-avatar {
+  border-color: #dce8ff;
+  box-shadow:
+    0 0 12px #dce8ff,
+    0 0 25px rgba(190, 210, 255, .7);
+}
+
+/* 季軍：銅色相框 */
+.trophy-item.bronze .podium-avatar {
+  border-color: #e9a16a;
+  box-shadow:
+    0 0 12px #e9a16a,
+    0 0 25px rgba(233, 161, 106, .7);
+}
+
+/* 手機版照片尺寸 */
+@media (max-width: 480px) {
+  .podium-avatar {
+    width: 52px;
+    height: 52px;
+    border-width: 3px;
+    margin-bottom: 5px;
+  }
+}
+
+  
 @keyframes trophyFloat {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-14px); }
@@ -1077,6 +1131,47 @@ if (!leaderboardResponse.ok || !leaderboardResult.success) {
 }
 
 const players = leaderboardResult.players || [];
+      
+// ===== 前三名玩家大頭貼：顯示在獎盃上方 =====
+
+const podiumAvatarSlots = [
+  { rank: 1, selector: '.trophy-item.gold' },
+  { rank: 2, selector: '.trophy-item.silver' },
+  { rank: 3, selector: '.trophy-item.bronze' }
+];
+
+// 先清除舊照片，避免重複顯示
+document.querySelectorAll('.podium-avatar').forEach(img => {
+  img.remove();
+});
+
+// 依照排行榜順序放入前三名照片
+podiumAvatarSlots.forEach((slot, index) => {
+  const player = players[index];
+
+  if (!player || !player.avatar_url) return;
+
+  const trophy = document.querySelector(slot.selector);
+
+  if (!trophy) return;
+
+  const avatar = document.createElement('img');
+
+  avatar.className = 'podium-avatar';
+  avatar.src = player.avatar_url;
+  avatar.alt = `${player.nickname || '玩家'}的大頭貼`;
+  avatar.loading = 'eager';
+  avatar.referrerPolicy = 'no-referrer';
+
+  // 照片放在獎盃圖示之前，也就是獎盃正上方
+  const trophyIcon = trophy.querySelector('.trophy-icon');
+
+  if (trophyIcon) {
+    trophy.insertBefore(avatar, trophyIcon);
+  } else {
+    trophy.prepend(avatar);
+  }
+});
 
       leaderboardRows.replaceChildren();
 
