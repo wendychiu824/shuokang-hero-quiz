@@ -823,11 +823,28 @@ main.leaderboard-mode #leaderboardPanel .leaderboard-sub {
       <input id="joinCode" value="SK2027TEST" maxlength="30"
         autocomplete="off" required>
 
-      <label for="nickname">玩家暱稱（最多 20 字）</label>
-      <input id="nickname" maxlength="20" autocomplete="nickname"
-        placeholder="請輸入你的暱稱" required>
+<label for="nickname">玩家暱稱（最多 20 字）</label>
+<input id="nickname" maxlength="20" autocomplete="nickname"
+  placeholder="請輸入你的暱稱" required>
 
-      <button id="joinButton" type="submit">加入遊戲</button>
+<label for="avatarFile">玩家大頭貼（必須上傳）</label>
+<input
+  id="avatarFile"
+  type="file"
+  accept="image/jpeg,image/png,image/webp"
+  required
+>
+
+<div id="avatarPreviewArea" class="hidden">
+  <p>大頭貼預覽</p>
+  <img
+    id="avatarPreview"
+    alt="玩家大頭貼預覽"
+    style="width:120px;height:120px;object-fit:cover;border-radius:50%;"
+  >
+</div>
+
+<button id="joinButton" type="submit">加入遊戲</button>
 
       <button id="viewLeaderboardButton" type="button">
        🏆 查看最終排行榜
