@@ -1,0 +1,12 @@
+{
+  "name": "碩康集團英雄集結搶答賽",
+  "short_name": "英雄集結",
+  "description": "碩康集團尾牙互動搶答遊戲",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#11152b",
+  "theme_color": "#11152b",
+  "icons": []
+}
