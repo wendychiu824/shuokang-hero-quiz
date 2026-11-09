@@ -665,9 +665,14 @@
 }
 
 .trophy-rank {
-  font-size: 36px;
+  font-size: 23px;
   font-weight: 900;
   text-shadow: 0 0 15px currentColor;
+  max-width: 100%;
+  padding: 0 5px;
+  overflow-wrap: anywhere;
+  text-align: center;
+  line-height: 1.3;
 }
 
 .trophy-label {
@@ -1193,6 +1198,24 @@ if (!leaderboardResponse.ok || !leaderboardResult.success) {
 }
 
 const players = leaderboardResult.players || [];
+
+// ===== 將前三名獎盃數字改為玩家暱稱 =====
+
+const podiumNicknameSlots = [
+  { selector: '.trophy-item.silver .trophy-rank', index: 1 },
+  { selector: '.trophy-item.gold .trophy-rank', index: 0 },
+  { selector: '.trophy-item.bronze .trophy-rank', index: 2 }
+];
+
+podiumNicknameSlots.forEach(slot => {
+  const player = players[slot.index];
+  const rankElement = document.querySelector(slot.selector);
+
+  if (rankElement) {
+    rankElement.textContent =
+      player ? player.nickname : '—';
+  }
+});      
       
 // ===== 前三名玩家大頭貼：顯示在獎盃上方 =====
 
