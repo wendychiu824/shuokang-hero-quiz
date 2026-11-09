@@ -926,7 +926,63 @@ main.leaderboard-mode #leaderboardPanel .leaderboard-sub {
   const leaderboardRows = document.getElementById('leaderboardRows');
   const leaderboardMessage = document.getElementById('leaderboardMessage');
   let leaderboardLoaded = false;
+  
+// ===== 玩家大頭貼上傳 Supabase Storage =====
+async function uploadPlayerAvatar(file) {
+  const allowedTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/webp'
+  ];
 
+  if (!file) {
+    throw new Error('請先選擇大頭貼照片');
+  }
+
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error('照片格式限 JPG、PNG 或 WebP');
+  }
+
+  if (file.size > 2 * 1024 * 1024) {
+    throw new Error('照片大小不可超過 2 MB');
+  }
+
+  const extensionMap = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp'
+  };
+
+  const extension = extensionMap[file.type];
+
+  const filePath =
+    `${Date.now()}-${crypto.randomUUID()}.${extension}`;
+
+  const uploadUrl =
+    `https://krtktutoycdfcskhpmam.supabase.co/storage/v1/object/player-avatars/${filePath}`;
+
+  const response = await fetch(uploadUrl, {
+    method: 'POST',
+    headers: {
+      'apikey': API_KEY,
+      'Content-Type': file.type,
+      'x-upsert': 'false'
+    },
+    body: file
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      result.message || result.error || '大頭貼上傳失敗'
+    );
+  }
+
+  return (
+    `https://krtktutoycdfcskhpmam.supabase.co/storage/v1/object/public/player-avatars/${filePath}`
+  );
+}
   
 // ===== 英雄榮耀榜：金紫銀彩花動畫 =====
 function createLeaderboardConfetti() {
