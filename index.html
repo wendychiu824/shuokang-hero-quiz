@@ -981,7 +981,8 @@ main.leaderboard-mode #leaderboardPanel .leaderboard-sub {
   const leaderboardMessage = document.getElementById('leaderboardMessage');
   let leaderboardLoaded = false;
   
-// ===== 玩家大頭貼上傳 Supabase Storage =====
+
+// ===== 玩家大頭貼自動壓縮及上傳 Supabase Storage =====
 async function uploadPlayerAvatar(file) {
   const allowedTypes = [
     'image/jpeg',
@@ -997,46 +998,107 @@ async function uploadPlayerAvatar(file) {
     throw new Error('照片格式限 JPG、PNG 或 WebP');
   }
 
-  if (file.size > 2 * 1024 * 1024) {
-    throw new Error('照片大小不可超過 2 MB');
-  }
+  // 建立圖片預覽物件
+  const imageUrl = URL.createObjectURL(file);
 
-  const extensionMap = {
-    'image/jpeg': 'jpg',
-    'image/png': 'png',
-    'image/webp': 'webp'
-  };
+  try {
+    const image = new Image();
+    image.src = imageUrl;
 
-  const extension = extensionMap[file.type];
+    await new Promise((resolve, reject) => {
+      image.onload = resolve;
+      image.onerror = () => reject(
+        new Error('照片讀取失敗，請重新選擇')
+      );
+    });
 
-  const filePath =
-    `${Date.now()}-${crypto.randomUUID()}.${extension}`;
-
-  const uploadUrl =
-    `https://krtktutoycdfcskhpmam.supabase.co/storage/v1/object/player-avatars/${filePath}`;
-
-  const response = await fetch(uploadUrl, {
-    method: 'POST',
-    headers: {
-      'apikey': API_KEY,
-      'Content-Type': file.type,
-      'x-upsert': 'false'
-    },
-    body: file
-  });
-
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      result.message || result.error || '大頭貼上傳失敗'
+    // 最長邊限制 1200px
+    const maxDimension = 1200;
+    const scale = Math.min(
+      1,
+      maxDimension / Math.max(image.width, image.height)
     );
-  }
 
-  return (
-    `https://krtktutoycdfcskhpmam.supabase.co/storage/v1/object/public/player-avatars/${filePath}`
-  );
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(image.width * scale);
+    canvas.height = Math.round(image.height * scale);
+
+    const context = canvas.getContext('2d');
+
+    if (!context) {
+      throw new Error('照片壓縮功能無法啟動');
+    }
+
+    // JPEG 不支援透明背景，先填白色
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    context.drawImage(
+      image,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+    // 自動調整 JPEG 品質，目標 1.5 MB 以內
+    let quality = 0.85;
+    let compressedBlob = null;
+
+    for (let i = 0; i < 6; i++) {
+      compressedBlob = await new Promise(resolve => {
+        canvas.toBlob(resolve, 'image/jpeg', quality);
+      });
+
+      if (!compressedBlob) {
+        throw new Error('照片壓縮失敗，請重新選擇');
+      }
+
+      if (compressedBlob.size <= 1.5 * 1024 * 1024) {
+        break;
+      }
+
+      quality -= 0.1;
+    }
+
+    if (compressedBlob.size > 2 * 1024 * 1024) {
+      throw new Error('照片仍然過大，請選擇較小的照片');
+    }
+
+    // 使用 JPEG 格式及唯一檔名
+    const filePath =
+      `${Date.now()}-${crypto.randomUUID()}.jpg`;
+
+    const uploadUrl =
+      `https://krtktutoycdfcskhpmam.supabase.co/storage/v1/object/player-avatars/${filePath}`;
+
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        'apikey': API_KEY,
+        'Content-Type': 'image/jpeg',
+        'x-upsert': 'false'
+      },
+      body: compressedBlob
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.message || result.error || '大頭貼上傳失敗'
+      );
+    }
+
+    return (
+      `https://krtktutoycdfcskhpmam.supabase.co/storage/v1/object/public/player-avatars/${filePath}`
+    );
+
+  } finally {
+    URL.revokeObjectURL(imageUrl);
+  }
 }
+
   
 // ===== 英雄榮耀榜：金紫銀彩花動畫 =====
 function createLeaderboardConfetti() {
@@ -1499,13 +1561,6 @@ avatarFileInput.addEventListener('change', () => {
     avatarFileInput.value = '';
     return;
   }
-
-  if (file.size > 2 * 1024 * 1024) {
-    alert('照片大小不可超過 2 MB，請重新選擇。');
-    avatarFileInput.value = '';
-    return;
-  }
-
   avatarPreview.src = URL.createObjectURL(file);
   avatarPreviewArea.classList.remove('hidden');
 });
