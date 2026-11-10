@@ -525,6 +525,17 @@
   }
 }
 
+/* SK 原始品牌圖片 */
+.sk-logo-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 0 8px rgba(80, 180, 255, .65));
+}
+  
 /* ===== 碩康英雄榮耀榜：完整頒獎舞台 ===== */
 
 #leaderboardPanel {
@@ -925,7 +936,12 @@ main.leaderboard-mode #leaderboardPanel .leaderboard-sub {
 <body>
   <main>
     <div class="symbol">
-  <div class="sk-logo sk-logo-large">SK</div>
+  <div class="sk-logo sk-logo-large">
+    <img
+      src="https://raw.githubusercontent.com/wendychiu824/shuokang-hero-quiz/main/sk-logo.png"
+      alt="碩康 SK 標誌"
+    >
+  </div>
 </div>
     <h1>英雄集結搶答賽</h1>
     <p class="sub">碩康集團 · 歡迎加入挑戰</p>
@@ -964,8 +980,12 @@ main.leaderboard-mode #leaderboardPanel .leaderboard-sub {
       </button>
     </form>
 <section id="questionPanel" class="hidden">
-  <p class="sub">
-  <span class="sk-logo sk-logo-small">SK</span>
+<p class="sub">
+  <img
+    src="https://raw.githubusercontent.com/wendychiu824/shuokang-hero-quiz/main/sk-logo.png"
+    alt="碩康 SK 標誌"
+    class="sk-logo-image sk-logo-small"
+  >
   英雄挑戰開始！
 </p>
   <h2 id="questionNumber">第 1 題</h2>
@@ -982,9 +1002,15 @@ main.leaderboard-mode #leaderboardPanel .leaderboard-sub {
 </section>
 
     <section id="leaderboardPanel" class="hidden" aria-live="polite">
-        <div class="symbol">
-    <div class="sk-logo sk-logo-large">SK</div>
+<div class="symbol">
+  <div class="sk-logo sk-logo-large">
+    <img
+      src="https://raw.githubusercontent.com/wendychiu824/shuokang-hero-quiz/main/sk-logo.png"
+      alt="碩康 SK 標誌"
+      class="sk-logo-image"
+    >
   </div>
+</div>
      <div class="trophy-podium">
 
 <div class="trophy-item silver">
