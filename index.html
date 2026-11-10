@@ -436,6 +436,7 @@
 
 .sk-logo {
   position: relative;
+  overflow: visible;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -527,15 +528,17 @@
 
 .sk-logo-image {
   display: block;
-  width: 20%;
-  height: 20%;
+  position: absolute;
+  width: 45px;
+  height: 45px;
+  max-width: none;
   object-fit: contain;
-  position: relative;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   z-index: 2;
-  margin: auto;
   filter: drop-shadow(0 0 8px rgba(80, 180, 255, .65));
 }
-
   
 /* ===== 碩康英雄榮耀榜：完整頒獎舞台 ===== */
 
@@ -941,6 +944,7 @@ main.leaderboard-mode #leaderboardPanel .leaderboard-sub {
     <img
       src="https://raw.githubusercontent.com/wendychiu824/shuokang-hero-quiz/main/sk-logo.png"
       alt="碩康 SK 標誌"
+      class="sk-logo-image"
     >
   </div>
 </div>
