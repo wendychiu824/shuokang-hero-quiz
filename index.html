@@ -1455,6 +1455,16 @@ document.getElementById('viewLeaderboardButton')
       button.disabled = disabled;
     });
   }
+  // 隱藏或顯示四個答案選項
+function setOptionsVisible(visible) {
+  optionButtons.forEach(button => {
+    if (visible) {
+      button.classList.remove('hidden');
+    } else {
+      button.classList.add('hidden');
+    }
+  });
+}
 
   // 玩家送出答案
   async function submitAnswer(selectedOption) {
