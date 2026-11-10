@@ -1519,6 +1519,8 @@ function setOptionsVisible(visible) {
 
   // 定期檢查遊戲狀態及題目
   async function checkGameQuestion(joinCode) {
+    console.log('玩家輪詢函式已執行：', joinCode);
+    
     if (isChecking) return;
 
     isChecking = true;
