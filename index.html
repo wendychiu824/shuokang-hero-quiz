@@ -1546,20 +1546,25 @@ const sessionResponse = await fetch(
 
       const status = sessionResult.session.status;
 
-      // 等待遊戲開始
-      if (status === 'lobby') {
-        setOptionsDisabled(true);
-        questionMessage.textContent = '等待主持人開始遊戲…';
-        return;
-      }
+// 等待遊戲開始
+if (status === 'lobby') {
+  setOptionsVisible(false);
+  setOptionsDisabled(true);
 
-      // 遊戲暫停
-      if (status === 'paused') {
-        setOptionsDisabled(true);
-        questionMessage.textContent =
-          '⏸ 遊戲暫停中，請稍候！';
-        return;
-      }
+  questionMessage.textContent = '等待主持人開始遊戲…';
+  return;
+}
+
+// 遊戲暫停
+if (status === 'paused') {
+  setOptionsVisible(false);
+  setOptionsDisabled(true);
+
+  questionMessage.textContent =
+    '⏸ 遊戲暫停中，請稍候！';
+
+  return;
+}
 
       // 遊戲結束：玩家頁面顯示最終前五名
       if (status === 'ended') {
