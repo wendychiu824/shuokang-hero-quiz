@@ -1637,24 +1637,20 @@ if (!questionResponse.ok || !questionResult.success) {
         document.getElementById('optionD').textContent =
           `D. ${q.option_d}`;
 
-        // 依照伺服器回傳狀態控制選項顯示
-const optionElements = [
-  document.getElementById('optionA'),
-  document.getElementById('optionB'),
-  document.getElementById('optionC'),
-  document.getElementById('optionD')
-];
+       
+// 依照伺服器回傳狀態控制選項顯示
+const answerOpen = questionResult.answer_open === true;
 
-optionElements.forEach(option => {
-  if (q.answer_open) {
-    option.classList.remove('hidden');
-  } else {
-    option.classList.add('hidden');
-  }
-});
+console.log('作答狀態診斷：', {
+  answer_open: questionResult.answer_open,
+  question_order: q.question_order,
+  hasAnswered: hasAnswered
+});        
 
-        // 同一題已作答就維持鎖定
-        setOptionsDisabled(hasAnswered || !q.answer_open);
+setOptionsVisible(answerOpen);
+
+// 同一題已作答或尚未開放作答，就維持鎖定
+setOptionsDisabled(hasAnswered || !answerOpen);
       }
 
     } catch (error) {
