@@ -231,30 +231,6 @@
   animation: interimRankAppear .6s ease both;
 }
 
-/* 綠色：排名上升 */
-#interimLeaderboardRows .rank-up {
-  border: 1px solid #39e879;
-  animation:
-    interimRankAppear .6s ease both,
-    rankUpGlow 1.5s ease-in-out 2;
-}
-
-/* 紅色：排名下降 */
-#interimLeaderboardRows .rank-down {
-  border: 1px solid #ff5b68;
-  animation:
-    interimRankAppear .6s ease both,
-    rankDownGlow 1.5s ease-in-out 2;
-}
-
-/* 金色：新進榜 */
-#interimLeaderboardRows .rank-new-entry {
-  border: 1px solid #ffe18a;
-  animation:
-    interimRankAppear .6s ease both,
-    rankNewEntry 1.2s ease-in-out 2;
-}
-
 @keyframes interimRankAppear {
   from {
     opacity: 0;
@@ -1241,9 +1217,6 @@ const interimCountdown =
 // 記錄目前顯示的中場排名題號
 let lastRankingQuestion = null;
 
-// 記錄上一輪玩家排名
-let previousRankingSnapshot = {};
-
 // ===== 玩家大頭貼自動壓縮及上傳 Supabase Storage =====
 async function uploadPlayerAvatar(file) {
   const allowedTypes = [
@@ -1597,19 +1570,16 @@ async function loadInterimLeaderboard(joinCode, questionOrder) {
     interimLeaderboardRows.replaceChildren();
 
     if (!players.length) {
-  interimLeaderboardMessage.textContent = '目前尚無玩家成績。';
+      interimLeaderboardMessage.textContent = '目前尚無玩家成績。';
 
-  lastRankingQuestion = questionOrder;
-  previousRankingSnapshot = {};
+      lastRankingQuestion = questionOrder;
 
-  return true;
-}
+      return true;
+    }
 
     let previousScore = null;
     let previousCorrect = null;
     let rank = 0;
-
-    const currentSnapshot = {};
 
     players.forEach((player, index) => {
       const score = Number(player.total_score) || 0;
@@ -1621,11 +1591,6 @@ async function loadInterimLeaderboard(joinCode, questionOrder) {
 
       previousScore = score;
       previousCorrect = correct;
-
-      const playerId = String(player.id);
-      const oldRank = previousRankingSnapshot[playerId];
-
-      currentSnapshot[playerId] = rank;
 
       const row = document.createElement('div');
       row.className = 'rank-row interim-rank-row';
@@ -1642,29 +1607,16 @@ async function loadInterimLeaderboard(joinCode, questionOrder) {
       scoreEl.className = 'rank-score';
       scoreEl.textContent = `${score.toLocaleString('zh-TW')} 分`;
 
-      // 排名升降動畫
-      if (oldRank === undefined && lastRankingQuestion !== null) {
-        row.classList.add('rank-new-entry');
-        rankEl.textContent = `✨ ${rank}`;
-      } else if (oldRank !== undefined && rank < oldRank) {
-        row.classList.add('rank-up');
-        rankEl.textContent = `🟢 ↑ ${rank}`;
-      } else if (oldRank !== undefined && rank > oldRank) {
-        row.classList.add('rank-down');
-        rankEl.textContent = `🔴 ↓ ${rank}`;
-      }
-
       row.append(rankEl, nameEl, scoreEl);
       interimLeaderboardRows.appendChild(row);
     });
 
-    previousRankingSnapshot = currentSnapshot;
     lastRankingQuestion = questionOrder;
-　　return true;
 
     interimLeaderboardMessage.textContent =
       `第 ${questionOrder} 題結束｜目前累積排名 TOP 10`;
 
+    return true;
   } catch (error) {
   console.error('讀取中場排行榜失敗：', error);
   interimLeaderboardMessage.textContent =
@@ -1857,7 +1809,6 @@ if (status === 'lobby') {
 
   // 重置中場排行榜紀錄
   lastRankingQuestion = null;
-  previousRankingSnapshot = {};
 
   // 重置玩家題目狀態
   currentQuestionOrder = null;
