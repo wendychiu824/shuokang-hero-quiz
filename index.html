@@ -219,6 +219,99 @@
       border: 1px solid #d9b94f;
     }
 
+  
+/* ===== 中場 TOP 10 排行榜動畫 ===== */
+
+#interimLeaderboardRows {
+  position: relative;
+  z-index: 2;
+}
+
+#interimLeaderboardRows .rank-row {
+  animation: interimRankAppear .6s ease both;
+}
+
+/* 綠色：排名上升 */
+#interimLeaderboardRows .rank-up {
+  border: 1px solid #39e879;
+  animation:
+    interimRankAppear .6s ease both,
+    rankUpGlow 1.5s ease-in-out 2;
+}
+
+/* 紅色：排名下降 */
+#interimLeaderboardRows .rank-down {
+  border: 1px solid #ff5b68;
+  animation:
+    interimRankAppear .6s ease both,
+    rankDownGlow 1.5s ease-in-out 2;
+}
+
+/* 金色：新進榜 */
+#interimLeaderboardRows .rank-new-entry {
+  border: 1px solid #ffe18a;
+  animation:
+    interimRankAppear .6s ease both,
+    rankNewEntry 1.2s ease-in-out 2;
+}
+
+@keyframes interimRankAppear {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rankUpGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(57, 232, 121, 0);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(57, 232, 121, .65);
+  }
+}
+
+@keyframes rankDownGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(255, 91, 104, 0);
+  }
+  50% {
+    box-shadow: 0 0 18px rgba(255, 91, 104, .55);
+  }
+}
+
+@keyframes rankNewEntry {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(255, 225, 138, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 225, 138, .8);
+  }
+}
+
+/* 中場排行榜倒數 */
+.interim-countdown {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 22px auto;
+  color: #d5d7f4;
+  font-size: 20px;
+}
+
+#interimCountdown {
+  color: #ffe18a;
+  font-size: 42px;
+  font-weight: 900;
+  min-width: 35px;
+  text-align: center;
+}
+
 
 /* 電腦版：大螢幕 */
 
@@ -1003,6 +1096,46 @@ main.leaderboard-mode #leaderboardPanel .leaderboard-sub {
   <p id="questionMessage">請仔細閱讀題目！</p>
 </section>
 
+
+<!-- ===== 中場 TOP 10 排行榜 ===== -->
+<section id="interimLeaderboardPanel" class="hidden" aria-live="polite">
+
+  <div class="symbol">
+    <div class="sk-logo sk-logo-large">
+      <img
+        src="https://raw.githubusercontent.com/wendychiu824/shuokang-hero-quiz/main/sk-logo.png"
+        alt="碩康 SK 標誌"
+        class="sk-logo-image"
+      >
+    </div>
+  </div>
+
+  <h2>⚡ 英雄集結戰力榜 TOP 10</h2>
+
+  <p class="leaderboard-sub">
+    中場英雄排名｜累積總分
+  </p>
+
+  <div id="interimLeaderboardRows"></div>
+
+  <p id="interimLeaderboardMessage">
+    正在統計英雄戰力…
+  </p>
+
+  <p class="leaderboard-sub">
+    下一輪挑戰即將開始
+  </p>
+
+  <div class="interim-countdown">
+    <span>下一題倒數</span>
+    <strong id="interimCountdown">8</strong>
+    <span>秒</span>
+  </div>
+
+</section>
+<!-- ===== 中場 TOP 10 排行榜結束 ===== -->
+
+    
     <section id="leaderboardPanel" class="hidden" aria-live="polite">
 <div class="symbol">
   <div class="sk-logo sk-logo-large">
@@ -1091,7 +1224,25 @@ main.leaderboard-mode #leaderboardPanel .leaderboard-sub {
   const leaderboardRows = document.getElementById('leaderboardRows');
   const leaderboardMessage = document.getElementById('leaderboardMessage');
   let leaderboardLoaded = false;
-  
+
+  // ===== 中場 TOP 10 排行榜元素 =====
+const interimLeaderboardPanel =
+  document.getElementById('interimLeaderboardPanel');
+
+const interimLeaderboardRows =
+  document.getElementById('interimLeaderboardRows');
+
+const interimLeaderboardMessage =
+  document.getElementById('interimLeaderboardMessage');
+
+const interimCountdown =
+  document.getElementById('interimCountdown');
+
+// 記錄目前顯示的中場排名題號
+let lastRankingQuestion = null;
+
+// 記錄上一輪玩家排名
+let previousRankingSnapshot = {};
 
 // ===== 玩家大頭貼自動壓縮及上傳 Supabase Storage =====
 async function uploadPlayerAvatar(file) {
@@ -1414,6 +1565,115 @@ podiumAvatarSlots.forEach((slot, index) => {
     }
   }
 
+
+// ===== 讀取中場 TOP 10 排行榜 =====
+async function loadInterimLeaderboard(joinCode, questionOrder) {
+  interimLeaderboardPanel.classList.remove('hidden');
+  questionPanel.classList.add('hidden');
+  waiting.classList.add('hidden');
+  leaderboardPanel.classList.add('hidden');
+
+  document.querySelector('main').classList.remove('leaderboard-mode');
+
+  interimLeaderboardMessage.textContent = '正在統計英雄戰力…';
+
+  try {
+    const response = await fetch(
+      `${API_URL}?action=interim_leaderboard&join_code=${encodeURIComponent(joinCode)}&_=${Date.now()}`,
+      {
+        headers: { 'apikey': API_KEY },
+        cache: 'no-store'
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || '讀取中場排行榜失敗');
+    }
+
+    const players = result.players || [];
+
+    interimLeaderboardRows.replaceChildren();
+
+    if (!players.length) {
+  interimLeaderboardMessage.textContent = '目前尚無玩家成績。';
+
+  lastRankingQuestion = questionOrder;
+  previousRankingSnapshot = {};
+
+  return true;
+}
+
+    let previousScore = null;
+    let previousCorrect = null;
+    let rank = 0;
+
+    const currentSnapshot = {};
+
+    players.forEach((player, index) => {
+      const score = Number(player.total_score) || 0;
+      const correct = Number(player.correct_count) || 0;
+
+      if (score !== previousScore || correct !== previousCorrect) {
+        rank = index + 1;
+      }
+
+      previousScore = score;
+      previousCorrect = correct;
+
+      const playerId = String(player.id);
+      const oldRank = previousRankingSnapshot[playerId];
+
+      currentSnapshot[playerId] = rank;
+
+      const row = document.createElement('div');
+      row.className = 'rank-row interim-rank-row';
+
+      const rankEl = document.createElement('span');
+      rankEl.className = 'rank-number';
+      rankEl.textContent = `${rank}`;
+
+      const nameEl = document.createElement('span');
+      nameEl.className = 'rank-name';
+      nameEl.textContent = player.nickname || '未命名玩家';
+
+      const scoreEl = document.createElement('span');
+      scoreEl.className = 'rank-score';
+      scoreEl.textContent = `${score.toLocaleString('zh-TW')} 分`;
+
+      // 排名升降動畫
+      if (oldRank === undefined && lastRankingQuestion !== null) {
+        row.classList.add('rank-new-entry');
+        rankEl.textContent = `✨ ${rank}`;
+      } else if (oldRank !== undefined && rank < oldRank) {
+        row.classList.add('rank-up');
+        rankEl.textContent = `🟢 ↑ ${rank}`;
+      } else if (oldRank !== undefined && rank > oldRank) {
+        row.classList.add('rank-down');
+        rankEl.textContent = `🔴 ↓ ${rank}`;
+      }
+
+      row.append(rankEl, nameEl, scoreEl);
+      interimLeaderboardRows.appendChild(row);
+    });
+
+    previousRankingSnapshot = currentSnapshot;
+    lastRankingQuestion = questionOrder;
+　　return true;
+
+    interimLeaderboardMessage.textContent =
+      `第 ${questionOrder} 題結束｜目前累積排名 TOP 10`;
+
+  } catch (error) {
+  console.error('讀取中場排行榜失敗：', error);
+  interimLeaderboardMessage.textContent =
+    `${error.message}，系統將稍後重新嘗試。`;
+
+  return false;
+}
+}
+
   
 // 查看最終排行榜按鈕
 document.getElementById('viewLeaderboardButton')
@@ -1581,39 +1841,137 @@ const sessionResponse = await fetch(
 
       const status = sessionResult.session.status;
 
+
 // 等待遊戲開始
 if (status === 'lobby') {
   setOptionsVisible(false);
   setOptionsDisabled(true);
 
+  // 隱藏所有排行榜及題目畫面
+  interimLeaderboardPanel.classList.add('hidden');
+  leaderboardPanel.classList.add('hidden');
+  questionPanel.classList.add('hidden');
+
+  // 顯示等待畫面
+  waiting.classList.remove('hidden');
+
+  // 重置中場排行榜紀錄
+  lastRankingQuestion = null;
+  previousRankingSnapshot = {};
+
+  // 重置玩家題目狀態
+  currentQuestionOrder = null;
+  hasAnswered = false;
+
   questionMessage.textContent = '等待主持人開始遊戲…';
   return;
 }
+
 
 // 遊戲暫停
 if (status === 'paused') {
   setOptionsVisible(false);
   setOptionsDisabled(true);
 
-  questionMessage.textContent =
-    '⏸ 遊戲暫停中，請稍候！';
+  // 判斷是否暫停在中場排行榜
+  if (sessionResult.session.game_phase === 'ranking') {
+    questionPanel.classList.add('hidden');
+    waiting.classList.add('hidden');
+    leaderboardPanel.classList.add('hidden');
+
+    interimLeaderboardPanel.classList.remove('hidden');
+
+    interimLeaderboardMessage.textContent =
+      '⏸ 中場排行榜暫停中，請等待主持人恢復！';
+
+    // 顯示暫停時剩餘秒數，不繼續倒數
+    if (sessionResult.session.remaining_seconds !== null) {
+      interimCountdown.textContent =
+        sessionResult.session.remaining_seconds;
+    }
+
+  } else {
+    // 一般題目暫停
+    interimLeaderboardPanel.classList.add('hidden');
+
+    questionMessage.textContent =
+      '⏸ 遊戲暫停中，請稍候！';
+  }
 
   return;
 }
 
-      // 遊戲結束：玩家頁面顯示最終前五名
-      if (status === 'ended') {
-        setOptionsDisabled(true);
-        await loadFinalLeaderboard(joinCode);
 
-        if (leaderboardLoaded && pollTimer) {
-          clearInterval(pollTimer);
-          pollTimer = null;
+
+      // ===== 中場 TOP 10 排行榜 =====
+      if (status === 'ranking') {
+        setOptionsVisible(false);
+        setOptionsDisabled(true);
+
+        questionPanel.classList.add('hidden');
+        waiting.classList.add('hidden');
+        leaderboardPanel.classList.add('hidden');
+
+        interimLeaderboardPanel.classList.remove('hidden');
+
+        document.querySelector('main').classList.remove('leaderboard-mode');
+
+        const questionOrder =
+          Number(sessionResult.session.current_question);
+
+        // 只在進入新的中場排名時重新讀取排行榜
+        if (lastRankingQuestion !== questionOrder) {
+          await loadInterimLeaderboard(joinCode, questionOrder);
+        }
+
+        // 依照伺服器時間計算排行榜倒數
+        const phaseStartedAt =
+          sessionResult.session.phase_started_at;
+
+        if (phaseStartedAt) {
+          const elapsedSeconds =
+            (Date.now() - new Date(phaseStartedAt).getTime()) / 1000;
+
+          const remainingSeconds = Math.max(
+            0,
+            Math.ceil(8 - elapsedSeconds)
+          );
+
+          interimCountdown.textContent = remainingSeconds;
+        } else {
+          interimCountdown.textContent = '8';
         }
 
         return;
       }
+      
 
+     
+// 遊戲結束：玩家頁面顯示最終前五名
+if (status === 'ended') {
+  setOptionsVisible(false);
+  setOptionsDisabled(true);
+
+  // 隱藏中場 TOP 10
+  interimLeaderboardPanel.classList.add('hidden');
+
+  // 顯示最終 TOP 5
+  await loadFinalLeaderboard(joinCode);
+
+  // 最終排行榜載入成功後，停止玩家輪詢
+  if (leaderboardLoaded && pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+
+  return;
+}
+
+      // 離開中場排行榜時，準備顯示下一題
+if (status === 'active') {
+  interimLeaderboardPanel.classList.add('hidden');
+}
+      
       // 只有遊戲進行中才讀取題目
       if (status === 'active') {
         const questionResponse = await fetch(
@@ -1642,6 +2000,8 @@ if (!questionResponse.ok || !questionResult.success) {
         if (isNewQuestion) {
           currentQuestionOrder = q.question_order;
           hasAnswered = false;
+
+          setOptionsDisabled(true);
 
           questionMessage.textContent =
             '請仔細閱讀題目，準備作答！';
