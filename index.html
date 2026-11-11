@@ -1885,12 +1885,12 @@ if (status === 'paused') {
 
           const remainingSeconds = Math.max(
             0,
-            Math.ceil(8 - elapsedSeconds)
+            Math.ceil(10 - elapsedSeconds)
           );
 
           interimCountdown.textContent = remainingSeconds;
         } else {
-          interimCountdown.textContent = '8';
+          interimCountdown.textContent = '10';
         }
 
         return;
