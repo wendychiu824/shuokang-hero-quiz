@@ -967,7 +967,6 @@ height: 145px;
 @media (prefers-reduced-motion: reduce) {
   .trophy-item,
   .trophy-icon,
-  ,
   #leaderboardPanel::before,
   .confetti-piece,
   #leaderboardRows .rank-row {
@@ -1053,6 +1052,12 @@ main.leaderboard-mode #leaderboardPanel .leaderboard-sub {
        🏆 查看最終排行榜
       </button>
     </form>
+
+    <!-- 等待遊戲開始 -->
+<section id="waiting" class="hidden">
+  <h2 id="welcome"></h2>
+  <p>已成功加入，請等待主持人開始遊戲……</p>
+</section>
 <section id="questionPanel" class="hidden">
 <p class="sub">
   英雄挑戰開始！
@@ -1103,8 +1108,8 @@ main.leaderboard-mode #leaderboardPanel .leaderboard-sub {
 
 </section>
 <!-- ===== 中場 TOP 10 排行榜結束 ===== -->
+    
   <script>
-
   const API_URL =
     'https://krtktutoycdfcskhpmam.supabase.co/functions/v1/game-api';
 
@@ -2016,6 +2021,12 @@ form.addEventListener('submit', async (event) => {
       throw new Error(result.message || '加入失敗，請稍後再試。');
     }
 
+    // 重置最終排行榜，確保新場次能正常載入
+leaderboardLoaded = false;
+leaderboardRows.replaceChildren();
+leaderboardPanel.classList.add('hidden');
+document.querySelector('main').classList.remove('leaderboard-mode');
+    
     currentPlayerId = result.player.id;
     currentJoinCode = joinCode;
 
@@ -2049,6 +2060,70 @@ form.addEventListener('submit', async (event) => {
   }
 });
 </script>
+
+
+<!-- ===== 最終排行榜 TOP 5 ===== -->
+<section id="leaderboardPanel" class="hidden">
+
+  <div class="symbol">
+    <div class="sk-logo sk-logo-large">
+      <img
+        src="https://raw.githubusercontent.com/wendychiu824/shuokang-hero-quiz/main/sk-logo.png"
+        alt="碩康 SK 標誌"
+        class="sk-logo-image"
+      >
+    </div>
+  </div>
+
+  <h2>🏆 英雄榮耀榜</h2>
+
+  <p class="leaderboard-sub">
+    碩康集團｜英雄集結搶答賽
+  </p>
+
+  <!-- 三座獎盃：左銀、中央金、右銅 -->
+  <div class="trophy-podium">
+
+    <div class="trophy-item silver">
+      <div class="trophy-rank">2</div>
+      <div class="trophy-icon">
+        <span class="trophy-svg">🏆</span>
+      </div>
+      <div class="trophy-label">第二名</div>
+    </div>
+
+    <div class="trophy-item gold">
+      <div class="trophy-rank">1</div>
+      <div class="trophy-icon">
+        <span class="trophy-svg">🏆</span>
+      </div>
+      <div class="trophy-label">第一名</div>
+    </div>
+
+    <div class="trophy-item bronze">
+      <div class="trophy-rank">3</div>
+      <div class="trophy-icon">
+        <span class="trophy-svg">🏆</span>
+      </div>
+      <div class="trophy-label">第三名</div>
+    </div>
+
+  </div>
+
+  <!-- 最終前五名 -->
+  <h2>⚡ 最終 TOP 5 排行榜</h2>
+
+  <div id="leaderboardRows"></div>
+
+  <p id="leaderboardMessage">
+    正在整理最終成績…
+  </p>
+
+</section>
+<!-- ===== 最終排行榜 TOP 5 結束 ===== -->
+
+</main>
+    
 <!-- 🎵 電腦版宇宙英雄背景音樂 -->
 <audio id="heroMusic" loop preload="auto">
   <source src="art_roseman-epic-cinematic-space-ambient-611540%20%281%29.mp3" type="audio/mpeg">
