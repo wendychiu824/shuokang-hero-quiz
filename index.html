@@ -967,6 +967,7 @@ height: 145px;
 @media (prefers-reduced-motion: reduce) {
   .trophy-item,
   .trophy-icon,
+  ,
   #leaderboardPanel::before,
   .confetti-piece,
   #leaderboardRows .rank-row {
@@ -1052,12 +1053,6 @@ main.leaderboard-mode #leaderboardPanel .leaderboard-sub {
        🏆 查看最終排行榜
       </button>
     </form>
-
-    <!-- 等待遊戲開始 -->
-<section id="waiting" class="hidden">
-  <h2 id="welcome"></h2>
-  <p>已成功加入，請等待主持人開始遊戲……</p>
-</section>
 <section id="questionPanel" class="hidden">
 <p class="sub">
   英雄挑戰開始！
@@ -1077,11 +1072,9 @@ main.leaderboard-mode #leaderboardPanel .leaderboard-sub {
 </section>
 
 
-
 <!-- ===== 中場 TOP 10 排行榜 ===== -->
 <section id="interimLeaderboardPanel" class="hidden" aria-live="polite">
 
-  <!-- 保留原有標誌動畫 -->
   <div class="symbol">
     <div class="sk-logo sk-logo-large">
       <img
@@ -1092,24 +1085,103 @@ main.leaderboard-mode #leaderboardPanel .leaderboard-sub {
     </div>
   </div>
 
-  <h2>⚡ TOP 10</h2>
+  <h2>⚡ 英雄集結戰力榜 TOP 10</h2>
 
-  <!-- 保留前十名排名及分數 -->
+  <p class="leaderboard-sub">
+    中場英雄排名｜累積總分
+  </p>
+
   <div id="interimLeaderboardRows"></div>
 
-  <!-- 隱藏但保留程式元素，避免 JavaScript 找不到 -->
-  <p id="interimLeaderboardMessage" class="hidden"></p>
+  <p id="interimLeaderboardMessage">
+    正在統計英雄戰力…
+  </p>
 
-  <div class="interim-countdown hidden">
+  <p class="leaderboard-sub">
+    下一輪挑戰即將開始
+  </p>
+
+  <div class="interim-countdown">
     <span>下一題倒數</span>
-    <strong id="interimCountdown">15</strong>
+    <strong id="interimCountdown">8</strong>
     <span>秒</span>
   </div>
 
 </section>
 <!-- ===== 中場 TOP 10 排行榜結束 ===== -->
+
     
-  <script>
+    <section id="leaderboardPanel" class="hidden" aria-live="polite">
+<div class="symbol">
+  <div class="sk-logo sk-logo-large">
+    <img
+      src="https://raw.githubusercontent.com/wendychiu824/shuokang-hero-quiz/main/sk-logo.png"
+      alt="碩康 SK 標誌"
+      class="sk-logo-image"
+    >
+  </div>
+</div>
+     <div class="trophy-podium">
+
+<div class="trophy-item silver">
+  <div class="trophy-icon">
+    <svg class="trophy-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <path d="M25 18H95V43C95 65 80 79 60 79S25 65 25 43Z" fill="currentColor" stroke="#ffffff" stroke-width="2"/>
+      <path d="M25 27H12V42C12 58 24 67 38 65M95 27H108V42C108 58 96 67 82 65" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>
+      <path d="M34 25H43V62L34 54Z" fill="#ffffff" opacity=".35"/>
+      <path d="M60 79V94M43 95H77M35 104H85V112H35Z" fill="currentColor" stroke="#ffffff" stroke-width="2"/>
+      <path d="M47 95H73" stroke="#ffffff" stroke-width="2" opacity=".7"/>
+    </svg>
+  </div>
+  <div class="trophy-rank">2</div>
+  <div class="trophy-label">亞軍</div>
+</div>
+       
+<div class="trophy-item gold">
+  <div class="trophy-icon">
+    <svg class="trophy-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <path d="M25 18H95V43C95 65 80 79 60 79S25 65 25 43Z" fill="currentColor" stroke="#fff3bd" stroke-width="2"/>
+      <path d="M25 27H12V42C12 58 24 67 38 65M95 27H108V42C108 58 96 67 82 65" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>
+      <path d="M34 25H43V62L34 54Z" fill="#ffffff" opacity=".4"/>
+      <path d="M60 79V94M43 95H77M35 104H85V112H35Z" fill="currentColor" stroke="#fff3bd" stroke-width="2"/>
+      <path d="M47 95H73" stroke="#ffffff" stroke-width="2" opacity=".8"/>
+    </svg>
+  </div>
+  <div class="trophy-rank">1</div>
+  <div class="trophy-label">冠軍</div>
+</div>
+
+<div class="trophy-item bronze">
+  <div class="trophy-icon">
+    <svg class="trophy-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+      <path d="M25 18H95V43C95 65 80 79 60 79S25 65 25 43Z" fill="currentColor" stroke="#ffe0c5" stroke-width="2"/>
+      <path d="M25 27H12V42C12 58 24 67 38 65M95 27H108V42C108 58 96 67 82 65" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round"/>
+      <path d="M34 25H43V62L34 54Z" fill="#ffffff" opacity=".35"/>
+      <path d="M60 79V94M43 95H77M35 104H85V112H35Z" fill="currentColor" stroke="#ffe0c5" stroke-width="2"/>
+      <path d="M47 95H73" stroke="#ffffff" stroke-width="2" opacity=".7"/>
+    </svg>
+  </div>
+  <div class="trophy-rank">3</div>
+  <div class="trophy-label">季軍</div>
+</div>
+
+</div>
+      <h2>英雄榮耀榜 TOP 5</h2>
+      <p class="leaderboard-sub">本次搶答賽最終排名</p>
+      <div id="leaderboardRows"></div>
+      <p id="leaderboardMessage">正在整理最終成績…</p>
+      <p class="leaderboard-sub">感謝所有英雄玩家的熱情參與！</p>
+    </section>
+
+    <section id="waiting" class="hidden">
+      <h2 id="welcome"></h2>
+      <p>已成功加入，請等待主持人開始遊戲。</p>
+    </section>
+    <div id="message" role="status" aria-live="polite"></div>
+  </main>
+
+
+<script>
   const API_URL =
     'https://krtktutoycdfcskhpmam.supabase.co/functions/v1/game-api';
 
@@ -1812,12 +1884,12 @@ if (status === 'paused') {
 
           const remainingSeconds = Math.max(
             0,
-            Math.ceil(15 - elapsedSeconds)
+            Math.ceil(10 - elapsedSeconds)
           );
 
           interimCountdown.textContent = remainingSeconds;
         } else {
-          interimCountdown.textContent = '15';
+          interimCountdown.textContent = '10';
         }
 
         return;
@@ -2021,12 +2093,6 @@ form.addEventListener('submit', async (event) => {
       throw new Error(result.message || '加入失敗，請稍後再試。');
     }
 
-    // 重置最終排行榜，確保新場次能正常載入
-leaderboardLoaded = false;
-leaderboardRows.replaceChildren();
-leaderboardPanel.classList.add('hidden');
-document.querySelector('main').classList.remove('leaderboard-mode');
-    
     currentPlayerId = result.player.id;
     currentJoinCode = joinCode;
 
@@ -2060,70 +2126,6 @@ document.querySelector('main').classList.remove('leaderboard-mode');
   }
 });
 </script>
-
-
-<!-- ===== 最終排行榜 TOP 5 ===== -->
-<section id="leaderboardPanel" class="hidden">
-
-  <div class="symbol">
-    <div class="sk-logo sk-logo-large">
-      <img
-        src="https://raw.githubusercontent.com/wendychiu824/shuokang-hero-quiz/main/sk-logo.png"
-        alt="碩康 SK 標誌"
-        class="sk-logo-image"
-      >
-    </div>
-  </div>
-
-  <h2>🏆 英雄榮耀榜</h2>
-
-  <p class="leaderboard-sub">
-    碩康集團｜英雄集結搶答賽
-  </p>
-
-  <!-- 三座獎盃：左銀、中央金、右銅 -->
-  <div class="trophy-podium">
-
-    <div class="trophy-item silver">
-      <div class="trophy-rank">2</div>
-      <div class="trophy-icon">
-        <span class="trophy-svg">🏆</span>
-      </div>
-      <div class="trophy-label">第二名</div>
-    </div>
-
-    <div class="trophy-item gold">
-      <div class="trophy-rank">1</div>
-      <div class="trophy-icon">
-        <span class="trophy-svg">🏆</span>
-      </div>
-      <div class="trophy-label">第一名</div>
-    </div>
-
-    <div class="trophy-item bronze">
-      <div class="trophy-rank">3</div>
-      <div class="trophy-icon">
-        <span class="trophy-svg">🏆</span>
-      </div>
-      <div class="trophy-label">第三名</div>
-    </div>
-
-  </div>
-
-  <!-- 最終前五名 -->
-  <h2>⚡ 最終 TOP 5 排行榜</h2>
-
-  <div id="leaderboardRows"></div>
-
-  <p id="leaderboardMessage">
-    正在整理最終成績…
-  </p>
-
-</section>
-<!-- ===== 最終排行榜 TOP 5 結束 ===== -->
-
-</main>
-    
 <!-- 🎵 電腦版宇宙英雄背景音樂 -->
 <audio id="heroMusic" loop preload="auto">
   <source src="art_roseman-epic-cinematic-space-ambient-611540%20%281%29.mp3" type="audio/mpeg">
