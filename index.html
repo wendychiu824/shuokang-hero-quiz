@@ -1003,6 +1003,14 @@ main.leaderboard-mode #leaderboardPanel .leaderboard-sub {
 #leaderboardPanel .leaderboard-sub {
   display: none;
 }
+
+/* 中場排行榜顯示時，隱藏首頁標誌及標題 */
+body:has(#interimLeaderboardPanel:not(.hidden)) main > .symbol,
+body:has(#interimLeaderboardPanel:not(.hidden)) main > h1,
+body:has(#interimLeaderboardPanel:not(.hidden)) main > .sub {
+  display: none;
+}
+  
 </style>  
   
 </head>
